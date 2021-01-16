@@ -32,8 +32,8 @@ update_history () {
 }
 
 find_video () {
-	temp=$(mktemp /tmp/ysp_idx.XXXXXXXX)
-	search_url="$1"
+	local temp=$(mktemp /tmp/ysp_idx.XXXXXXXX)
+	local search_url="$1"
 	selection=
 	url=
 	
@@ -44,7 +44,7 @@ find_video () {
 	
 	pkill youtube-dl # found result, stop searching
 	
-	idx=$(cat "$temp")
+	local idx=$(cat "$temp")
 	rm -f "$temp"
 	
 	if [[ -n "$idx" ]]
@@ -54,24 +54,28 @@ find_video () {
 	fi
 }
 
-if [[ $# -gt 0 ]]
-then
-	if [[ "$@" =~ --clear-history ]]
+process_args () {
+	if [[ $# -gt 0 ]]
 	then
-		clear_history
-		exit
-	elif [[ "$@" =~ --subs ]]
-	then
-		include_cookies="--cookies $cookiefile" # check/update this file if sub feed breaks
-		find_video "https://www.youtube.com/feed/subscriptions"
-	elif [[ "$@" =~ --n=(all|[0-9]+) ]]
-	then
-		search_N="${BASH_REMATCH[1]}"
+		if [[ "$@" =~ --clear-history ]]
+		then
+			clear_history
+			exit
+		elif [[ "$@" =~ --subs ]]
+		then
+			include_cookies="--cookies $cookiefile" # check/update this file if sub feed breaks
+			find_video "https://www.youtube.com/feed/subscriptions"
+		elif [[ "$@" =~ --n=(all|[0-9]+) ]]
+		then
+			search_N="${BASH_REMATCH[1]}"
+			do_search
+		fi
+	else
+		do_search
 	fi
-fi
+}
 
-if [[ -z "$url" ]]
-then
+do_search () {
 	search_query=$(tac "$historyfile" | rofi -dmenu -p "Search YouTube" -theme-str 'entry { placeholder: "Enter text or select recent search..."; }' -l $([[ $history_size -lt 10 ]] && echo "$history_size" || echo 10) -scroll-method 0)
 	if [[ "$search_query" =~ (https?\:\/\/)?(www\.)?(youtube\.com|youtu\.?be)\/.+$ ]]
 	then
@@ -84,15 +88,19 @@ then
 	else
 		exit
 	fi
-fi
+}
 
-if [[ -n "$url" ]]
-then
-	history_entry="$selection"
-	pkill mpv
-	mpv --really-quiet "$url" &
-else
-	history_entry="$search_query"
-fi
+play_video () {
+	if [[ -n "$url" ]]
+	then
+		history_entry="$selection"
+		pkill mpv
+		mpv --really-quiet "$url" &
+	else
+		history_entry="$search_query"
+	fi
+}
 
+process_args "$@"
+play_video
 update_history
