@@ -16,7 +16,7 @@ fi
 clear_history () {
 	local success=$(> "$historyfile")
 	echo "Cleared search history"
-	return "$success"
+	return $success
 }
 
 update_history () {
@@ -37,21 +37,19 @@ find_video () {
 	selection=
 	url=
 	
-	mapfile -t selection_array < <(youtube-dl -i --playlist-end $search_N $include_cookies -j "$search_url" \
-		| jq --unbuffered -r '. | "\(.fulltitle) :: \(.uploader) => \(.webpage_url)"' \
-		| tee >(stdbuf -o0 awk 'BEGIN{FS=OFS=" => "}{NF--; print}' \
-		| rofi -dmenu -i -p 'Select Video' -no-show-icons -l 10 -scroll-method 0 -format i -async-pre-read 0 > "$temp") &);
+	youtube-dl -i --playlist-end $search_N $include_cookies -j "$search_url" \
+		| jq --unbuffered -r '. | "\(.fulltitle) :: \(.uploader) => \(.webpage_url)"' > "$temp" &
+	local idx=$(tail -f "$temp" | stdbuf -o0 awk 'BEGIN{FS=OFS=" => "}{NF--; print}' \
+		| rofi -dmenu -i -p 'Select Video' -no-show-icons -l 10 -scroll-method 0 -format i -async-pre-read 0 &)
 	
 	pkill youtube-dl # found result, stop searching
 	
-	local idx=$(cat "$temp")
-	rm -f "$temp"
-	
 	if [[ -n "$idx" ]]
 	then
-		selection="${selection_array[$idx]}"
+		selection=$(sed "$((idx+1))q;d" "$temp")
 		url=$(echo "$selection" | awk 'BEGIN{FS=OFS=" => "}{print $NF}')
 	fi
+	rm -f "$temp"
 }
 
 process_args () {
