@@ -1,6 +1,8 @@
 #!/bin/bash
 
-configfile="$(dirname $0)/config"
+## Initialise variables
+
+# configfile="$(dirname $0)/config"
 # if [[ -f "$config" ]]
 # then
 search_N=30
@@ -16,6 +18,8 @@ then
 	touch -a "$historyfile"
 fi
 history_size=$(< "$historyfile" wc -l 2>/dev/null || echo 0)
+
+## Define functions
 
 clear_history () {
 	local success=$(> "$historyfile")
@@ -102,6 +106,8 @@ play_video () {
 		history_entry="$search_query"
 	fi
 }
+
+## Main thread
 
 process_args "$@"
 play_video
