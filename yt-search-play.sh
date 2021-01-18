@@ -1,17 +1,21 @@
 #!/bin/bash
 
+configfile="$(dirname $0)/config"
+# if [[ -f "$config" ]]
+# then
 search_N=30
-historyfile_path="$HOME/.cache/yt-search-play"
-historyfile="$historyfile_path/search-history"
-history_size=$(< "$historyfile" wc -l 2>/dev/null || echo 0)
 max_history_size=50
-cookiefile="$historyfile_path/cookies.txt"
+# fi
+data_path="$(dirname $0)/.data"
+historyfile="$data_path/search-history"
+cookiefile="$data_path/cookies.txt"
 
 if [[ ! -f "$historyfile" ]]
 then
-	mkdir -p "$historyfile_path"
+	mkdir -p "$data_path"
 	touch -a "$historyfile"
 fi
+history_size=$(< "$historyfile" wc -l 2>/dev/null || echo 0)
 
 clear_history () {
 	local success=$(> "$historyfile")
