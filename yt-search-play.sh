@@ -122,8 +122,10 @@ write_to_cache () {
   	tail --pid="$2" -f /dev/null
   	local cache=$(<"$temp_idx")
   
-		jq --arg sel "$1" 'del(.[] | select(.entry == $sel))' "$cachefile" | jq --arg sel "$1" --arg time "$(date +%s)" --arg cc "$cache" '. += [{entry: $sel, time: $time, cache: $cc}]' > "$cachefile.tmp" && mv "$cachefile.tmp" "$cachefile"
-  
+		if [[ -n "$cache" ]]
+		then
+			jq --arg sel "$1" 'del(.[] | select(.entry == $sel))' "$cachefile" | jq --arg sel "$1" --arg time "$(date +%s)" --arg cc "$cache" '. += [{entry: $sel, time: $time, cache: $cc}]' > "$cachefile.tmp" && mv "$cachefile.tmp" "$cachefile"
+		fi
 	fi
 	rm -f "$temp_idx"
 }
