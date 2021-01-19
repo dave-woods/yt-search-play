@@ -3,10 +3,14 @@
 ## Check dependencies
 
 check_failed=
-type rofi &>/dev/null || (>&2 echo "The dependency rofi is missing. See https://github.com/davatorium/rofi/blob/next/INSTALL.md for instructions on how to install it."; check_failed=true)
-type jq &>/dev/null || (>&2 echo "The dependency jq is missing. See https://stedolan.github.io/jq/download for instructions on how to install it."; check_failed=true)
-type youtube-dl &>/dev/null || (>&2 echo "The dependency youtube-dl is missing. See https://github.com/ytdl-org/youtube-dl/blob/master/README.md#installation for instructions on how to install it."; check_failed=true)
-type mpv &>/dev/null || (>&2 echo "The dependency mpv is missing. See https://mpv.io/installation for instructions on how to install it."; check_failed=true)
+type rofi &>/dev/null
+[[ $? -ne 0 ]] && check_failed=true && >&2 echo "The dependency rofi is missing. See https://github.com/davatorium/rofi/blob/next/INSTALL.md for instructions on how to install it."
+type jq &>/dev/null
+[[ $? -ne 0 ]] && check_failed=true && >&2 echo "The dependency jq is missing. See https://stedolan.github.io/jq/download for instructions on how to install it."
+type youtube-dl &>/dev/null
+[[ $? -ne 0 ]] && check_failed=true && >&2 echo "The dependency youtube-dl is missing. See https://github.com/ytdl-org/youtube-dl/blob/master/README.md#installation for instructions on how to install it."
+type mpv &>/dev/null
+[[ $? -ne 0 ]] && check_failed=true && >&2 echo "The dependency mpv is missing. See https://mpv.io/installation for instructions on how to install it."
 if [[ "$check_failed" ]]
 then
 	exit 1
