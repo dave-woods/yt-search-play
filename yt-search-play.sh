@@ -16,7 +16,10 @@ force_no_cache=
 subs_mode=
 
 ## Rewrite_default_config
+
 jq -n --arg search_size "$search_size" --arg max_history_size "$max_history_size" --arg max_cache_age "$max_cache_age" --arg data_dir "$data_dir" --arg force_no_cache "$force_no_cache" --arg subs_mode "$subs_mode" '{search_size: $search_size, max_history_size: $max_history_size, max_cache_age: $max_cache_age, data_dir: $data_dir, force_no_cache: $force_no_cache, subs_mode: $subs_mode}' > "$default_configfile"
+
+## Define functions
 
 find_config () {
 	if [[ -s "$passed_configfile" ]]
@@ -84,12 +87,12 @@ load_config () {
 	history_size=$(< "$historyfile" wc -l 2>/dev/null || echo 0)
 }
 
-## Define functions
-
 clear_history () {
-	local success=$(> "$historyfile")
-	echo "Cleared search history"
-	return $success
+	rm -f "$historyfile"
+}
+
+clear_cache () {
+	rm -f "$cachefile"
 }
 
 update_history () {
@@ -102,6 +105,10 @@ update_history () {
 	then
 		echo $(tail -n $max_history_size "$historyfile") > "$historyfile"
 	fi
+}
+
+purge_expired_cache () {
+	jq --arg time "$(($(date +%s)-$max_cache_age))" 'del(.[] | select(.time < $time))' "$cachefile" > "$cachefile.tmp" && mv "$cachefile.tmp" "$cachefile"
 }
 
 write_to_cache () {
@@ -122,10 +129,11 @@ write_to_cache () {
 }
 
 read_from_cache () {
-	if [[ -f "$cachefile" ]]
+	if [[ -s "$cachefile" ]]
   then
+		purge_expired_cache
     local entry_found=$(jq --arg sel "$1" '.[] | select(.entry == $sel)' "$cachefile")
-    if [[ -n "$entry_found" ]] && [[ $(($(date +%s)-$(echo "$entry_found" | jq -r '.time'))) -lt $max_cache_age ]]
+    if [[ -n "$entry_found" ]]
     then
       echo "$entry_found"
     fi
@@ -176,9 +184,18 @@ find_video () {
 process_args () {
 	if [[ $# -gt 0 ]]
 	then
-		if [[ "$@" =~ --clear-history ]]
+		if [[ "$@" =~ --clear-history ]] && [[ "$@" =~ --clear-cache ]]
 		then
 			clear_history
+			clear_cache
+			exit
+		elif [[ "$@" =~ --clear-history ]]
+		then
+			clear_history
+			exit
+		elif [[ "$@" =~ --clear-cache ]]
+		then
+			clear_cache
 			exit
 		else
 			while [[ $# -gt 0 ]]
