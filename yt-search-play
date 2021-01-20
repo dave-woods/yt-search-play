@@ -30,10 +30,6 @@ if [[ $? -ne 0 ]]
 then
 	check_failed=true
 	>&2 echo "The dependency youtube-dl is missing. See https://github.com/ytdl-org/youtube-dl/blob/master/README.md#installation for instructions on how to install it."
-elif [[ $(date -d"2021-01-16" +%s) -gt $(date -d"$(youtube-dl --version | sed 's/\./-/g')" +%s) ]]
-then
-	check_failed=true
-	>&2 echo "The dependency youtube-dl is out of date, please upgrade to at least version 2021.01.16 (try running \"youtube-dl -U\")."
 fi
 
 type mpv &>/dev/null
