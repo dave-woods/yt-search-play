@@ -3,6 +3,6 @@
   "max_history_size": "50",
   "max_cache_age": "60",
   "data_dir": ".data",
-  "force_no_cache": "",
-  "subs_mode": ""
+  "force_no_cache": "false",
+  "subs_mode": "false"
 }
