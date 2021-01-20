@@ -3,14 +3,46 @@
 ## Check dependencies
 
 check_failed=
+
+type gawk &>/dev/null
+if [[ $? -ne 0 ]]
+then
+	check_failed=true
+	>&2 echo "The dependency gawk is missing. Run \"sudo apt install gawk\" to install it."
+fi
+
 type rofi &>/dev/null
-[[ $? -ne 0 ]] && check_failed=true && >&2 echo "The dependency rofi is missing. See https://github.com/davatorium/rofi/blob/next/INSTALL.md for instructions on how to install it."
+if [[ $? -ne 0 ]]
+then
+	check_failed=true
+	>&2 echo "The dependency rofi is missing. See https://github.com/davatorium/rofi/blob/next/INSTALL.md for instructions on how to install it."
+fi
+
 type jq &>/dev/null
-[[ $? -ne 0 ]] && check_failed=true && >&2 echo "The dependency jq is missing. See https://stedolan.github.io/jq/download for instructions on how to install it."
+if [[ $? -ne 0 ]]
+then
+	check_failed=true
+	>&2 echo "The dependency jq is missing. Run \"sudo apt install jq\" to install it, or see https://stedolan.github.io/jq/download for further details."
+fi
+
 type youtube-dl &>/dev/null
-[[ $? -ne 0 ]] && check_failed=true && >&2 echo "The dependency youtube-dl is missing. See https://github.com/ytdl-org/youtube-dl/blob/master/README.md#installation for instructions on how to install it."
+if [[ $? -ne 0 ]] 
+then
+	check_failed=true
+	>&2 echo "The dependency youtube-dl is missing. See https://github.com/ytdl-org/youtube-dl/blob/master/README.md#installation for instructions on how to install it."
+elif [[ $(date -d"2021-01-16" +%s) -gt $(date -d"$(youtube-dl --version | sed 's/\./-/g')" +%s) ]]
+then
+	check_failed=true
+	>&2 echo "The dependency youtube-dl is out of date, please upgrade to at least version 2021.01.16 (try running \"youtube-dl -U\")."
+fi
+
 type mpv &>/dev/null
-[[ $? -ne 0 ]] && check_failed=true && >&2 echo "The dependency mpv is missing. See https://mpv.io/installation for instructions on how to install it."
+if [[ $? -ne 0 ]]
+then
+	check_failed=true
+	>&2 echo "The dependency mpv is missing. Run \"sudo apt install mpv\" to install it, or see https://mpv.io/installation for further details."
+fi
+
 if [[ "$check_failed" ]]
 then
 	exit 1
