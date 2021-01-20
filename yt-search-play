@@ -60,8 +60,8 @@ search_size=30
 max_history_size=50
 max_cache_age=60
 data_dir=".data"
-force_no_cache=
-subs_mode=
+force_no_cache=false
+subs_mode=false
 
 ## (Re)write default config
 
@@ -196,8 +196,8 @@ find_video () {
 	url=
 
 	# check/update this file if sub feed breaks
-	[[ -n "$subs_mode" ]] && local include_cookies="--cookies $cookiefile"
-	[[ -z "$force_no_cache" ]] && local cache_result=$(read_from_cache "$search_url")
+	[[ "$subs_mode" == "true" ]] && local include_cookies="--cookies $cookiefile"
+	[[ "$force_no_cache" != "true" ]] && local cache_result=$(read_from_cache "$search_url")
 	
 	if [[ -z "$cache_result" ]]
 	then
@@ -217,7 +217,7 @@ find_video () {
 			selection=$(sed "$((idx+1))q;d" "$temp_idx")
 		fi
 
-		[[ -z "$force_no_cache" ]] && write_to_cache "$search_url" $ytdl_pid || (kill $ytdl_pid 2>/dev/null; rm -f "$temp_idx") &
+		[[ "$force_no_cache" != "true" ]] && write_to_cache "$search_url" $ytdl_pid || (kill $ytdl_pid 2>/dev/null; rm -f "$temp_idx") &
 	else
 		local cache_value=$(echo "$cache_result" | jq -r '.cache')
     idx=$(echo "$cache_value" | stdbuf -o0 awk 'BEGIN{FS=OFS=" => "}{NF--; print}' \
@@ -234,7 +234,11 @@ find_video () {
 process_args () {
 	if [[ $# -gt 0 ]]
 	then
-		if [[ "$@" =~ --clear-history ]] && [[ "$@" =~ --clear-cache ]]
+		if [[ "$@" =~ --generate-config ]]
+		then
+			echo "Default config generated in: $default_configfile"
+			exit
+		elif [[ "$@" =~ --clear-history ]] && [[ "$@" =~ --clear-cache ]]
 		then
 			clear_history
 			clear_cache
@@ -261,6 +265,10 @@ process_args () {
 						shift
 						shift
 						;;
+					--force-no-cache)
+						force_no_cache=true
+						shift
+						;;
 					--config)
 						passed_configfile="$2"
 						load_config
@@ -274,7 +282,7 @@ process_args () {
 }
 
 do_search () {
-	if [[ -n "$subs_mode" ]]
+	if [[ "$subs_mode" == "true" ]]
 	then
 		find_video "https://www.youtube.com/feed/subscriptions"
 	else
