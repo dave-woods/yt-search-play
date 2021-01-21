@@ -287,6 +287,10 @@ do_search () {
 		then
 			selection="$search_query"
 			url="${BASH_REMATCH[0]}"
+		elif [[ "$search_query" =~ ^@(.+)$ ]]
+		then
+			sanitised_query=${BASH_REMATCH[1]// /+}
+			find_video "https://www.youtube.com/c/$sanitised_query/videos"
 		elif [[ -n "$search_query" ]]
 		then
 			sanitised_query=${search_query// /+}
