@@ -191,8 +191,17 @@ find_video () {
 	selection=
 	url=
 
-	# check/update this file if sub feed breaks
-	[[ "$subs_mode" == "true" ]] && local include_cookies="--cookies $cookiefile"
+	if [[ "$subs_mode" == "true" ]]
+	then
+		# check/update this file if sub feed breaks
+		if [[ -s "$cookiefile" ]]
+		then
+			local include_cookies="--cookies $cookiefile"
+		else
+			>&2 echo "A valid cookies.txt file exist in $data_dir."
+			exit 1
+		fi
+	fi
 	[[ "$force_no_cache" != "true" ]] && local cache_result=$(read_from_cache "$search_url")
 	
 	if [[ -z "$cache_result" ]]
