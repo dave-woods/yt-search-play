@@ -215,21 +215,21 @@ find_video () {
 		rm -f "$temp_pid"
 
 		idx=$(tail -f "$temp_res" | stdbuf -o0 awk 'BEGIN{FS=OFS=" => "}{NF--; print}' \
-			| rofi -dmenu -i -p 'Select Video' -no-show-icons -l 10 -scroll-method 0 -format i -async-pre-read 0 &)
+			| rofi -dmenu -i -p 'Select Video' -no-show-icons -l 10 -scroll-method 0 -format d -async-pre-read 0 &)
 		
-		if [[ -n "$idx" ]] && [[ $idx -ge 0 ]] && [[ -s "$temp_res" ]]
+		if [[ -n "$idx" ]] && [[ $idx -ge 1 ]] && [[ -s "$temp_res" ]]
 		then
-			selection=$(sed "$((idx+1))q;d" "$temp_res")
+			selection=$(sed "${idx}q;d" "$temp_res")
 		fi
 
 		[[ "$force_no_cache" != "true" ]] && write_to_cache "$search_url" $ytdl_pid || (kill $ytdl_pid 2>/dev/null; rm -f "$temp_res") &
 	else
 		local cache_value=$(echo "$cache_result" | jq -r '.cache')
     idx=$(echo "$cache_value" | stdbuf -o0 awk 'BEGIN{FS=OFS=" => "}{NF--; print}' \
-      | rofi -dmenu -i -p 'Select Video' -no-show-icons -l 10 -scroll-method 0 -format i -async-pre-read 0 &)
+      | rofi -dmenu -i -p 'Select Video' -no-show-icons -l 10 -scroll-method 0 -format d -async-pre-read 0 &)
     if [[ -n "$idx" ]]
     then
-      selection=$(echo "$cache_value" | sed "$((idx+1))q;d")
+      selection=$(echo "$cache_value" | sed "${idx}q;d")
     fi
 	fi
 
