@@ -164,14 +164,14 @@ write_to_cache () {
   	fi
 
   	tail --pid="$2" -f /dev/null
-  	local cache=$(<"$temp_idx")
+  	local cache=$(<"$temp_res")
   
 		if [[ -n "$cache" ]]
 		then
 			jq --arg sel "$1" 'del(.[] | select(.entry == $sel))' "$cachefile" | jq --arg sel "$1" --arg time "$(date +%s)" --arg cc "$cache" '. += [{entry: $sel, time: $time, cache: $cc}]' > "$cachefile.tmp" && mv "$cachefile.tmp" "$cachefile"
 		fi
 	fi
-	rm -f "$temp_idx"
+	rm -f "$temp_res"
 }
 
 read_from_cache () {
@@ -206,23 +206,23 @@ find_video () {
 	
 	if [[ -z "$cache_result" ]]
 	then
-		temp_idx=$(mktemp /tmp/ysp_idx.XXXXXXXX)
+		temp_res=$(mktemp /tmp/ysp_res.XXXXXXXX)
 		temp_pid=$(mktemp /tmp/ysp_pid.XXXXXXXX)
 		
 		( youtube-dl -i --playlist-end $search_size $include_cookies -j "$search_url" & echo $! >&3 ) 3>"$temp_pid" \
-			| jq --unbuffered -r '. | "\(.fulltitle) :: \(.uploader) => \(.webpage_url)"' > "$temp_idx" &
+			| jq --unbuffered -r '. | "\(.fulltitle) :: \(.uploader) => \(.webpage_url)"' > "$temp_res" &
 		ytdl_pid=$(<"$temp_pid")
 		rm -f "$temp_pid"
 
-		idx=$(tail -f "$temp_idx" | stdbuf -o0 awk 'BEGIN{FS=OFS=" => "}{NF--; print}' \
+		idx=$(tail -f "$temp_res" | stdbuf -o0 awk 'BEGIN{FS=OFS=" => "}{NF--; print}' \
 			| rofi -dmenu -i -p 'Select Video' -no-show-icons -l 10 -scroll-method 0 -format i -async-pre-read 0 &)
 		
-		if [[ -n "$idx" ]]
+		if [[ -n "$idx" ]] && [[ $idx -ge 0 ]] && [[ -s "$temp_res" ]]
 		then
-			selection=$(sed "$((idx+1))q;d" "$temp_idx")
+			selection=$(sed "$((idx+1))q;d" "$temp_res")
 		fi
 
-		[[ "$force_no_cache" != "true" ]] && write_to_cache "$search_url" $ytdl_pid || (kill $ytdl_pid 2>/dev/null; rm -f "$temp_idx") &
+		[[ "$force_no_cache" != "true" ]] && write_to_cache "$search_url" $ytdl_pid || (kill $ytdl_pid 2>/dev/null; rm -f "$temp_res") &
 	else
 		local cache_value=$(echo "$cache_result" | jq -r '.cache')
     idx=$(echo "$cache_value" | stdbuf -o0 awk 'BEGIN{FS=OFS=" => "}{NF--; print}' \
