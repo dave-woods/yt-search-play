@@ -291,7 +291,7 @@ do_search () {
 	then
 		find_video "https://www.youtube.com/feed/subscriptions"
 	else
-		search_query=$(tac "$historyfile" | rofi -dmenu -p "Search YouTube" -no-show-icons -theme-str 'entry { placeholder: "Enter text or select recent search..."; }' -l $([[ $history_size -lt 10 ]] && echo "$history_size" || echo 10) -scroll-method 0)
+		search_query=$(tac "$historyfile" | rofi -dmenu -i -p "Search YouTube" -no-show-icons -theme-str 'entry { placeholder: "Enter text or select recent search..."; }' -l $([[ $history_size -lt 10 ]] && echo "$history_size" || echo 10) -scroll-method 0)
 		if [[ "$search_query" =~ (https?\:\/\/)?(www\.)?(youtube\.com|youtu\.?be)\/.+$ ]]
 		then
 			selection="$search_query"
