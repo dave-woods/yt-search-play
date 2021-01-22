@@ -47,7 +47,7 @@ The following options are available:
 * `--clear-history`: Clear the search history and exit
 * `--clear-cache`: Clear the cache and exit
 * `--subs`: Fetch videos from a YouTube account's subscription feed instead of using a search query
-* `--n [num]`: Fetch a maximum of `num` videos
+* `--n [num]` *or* `--search-size [num]` : Fetch a maximum of `num` videos
 * `--force-no-cache`: Prevent the program from reading from or writing to the cache
 * `--config [file]`: Use `file` as the configuration file
 
