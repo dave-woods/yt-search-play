@@ -265,7 +265,7 @@ process_args () {
 						subs_mode=true
 						shift
 						;;
-					--n)
+					--n|--search-size)
 						search_size="$2"
 						shift
 						shift
