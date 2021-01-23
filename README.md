@@ -12,11 +12,11 @@ While this script does not require an API key to run, this does slow down the se
 
 Listed versions below have been tested. Newer releases should work fine, but older versions may have problems. Note that the versions located in the standard package managers may be outdated -- see the relevant links above for the most up to date information on installing.
 
-* jq 1.5.1
-* gawk 4.1.3
 * rofi 1.6.1
 * youtube-dl 2021.01.16
 * mpv 0.14.0
+* jq 1.5.1 (used to parse the data from youtube-dl)
+* gawk 4.1.3 (GNU awk, for pretty printing)
 
 ## Installation and usage
 
