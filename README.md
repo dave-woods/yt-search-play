@@ -36,9 +36,17 @@ chmod +x yt-search-play
 
 Once you have the file downloaded and executable, you might want to add the script's directory to your PATH variable to make it executable from anywhere without having to specify the full path to it.
 
+### Using the interface
+
+Once launched, a rofi window will appear. You can type in your search query at the prompt, and hit the **Enter key** to begin searching YouTube for matching videos. If you have used the program before, your recent searches will be displayed, and you can use the **arrow keys** to navigate. Hit the **Enter key** to select the highlighted history entry. When you have history entries available, typing will filter the entries -- if what you type doesn't match any entries, a search will be performed instead. If your query matches a history entry, but you want to perform a search instead of selecting the entry, hit **Ctrl + Enter** to override selecting the history entry.
+
+To display just a particular channel's videos, you can use the "@" symbol before the channel's name to find their most recent uploads. For example, typing `@drawfee` will bring up the most recent videos from [Drawfee Show](https://www.youtube.com/c/drawfee). **Note**: this currently only works for channels which have a human-readable channel ID.
+
 #### Accessing subscription feed
 
 In order for the program to be able to access a user's YouTube subscription feed, a Netscape-format `cookies.txt` file must be placed in the data directory (default `.data`) which contains the login credentials. The specific cookies needed can be obtained by logging into YouTube the normal way and then using a browser extension to export the file, such as [EditThisCookie](https://chrome.google.com/webstore/detail/editthiscookie/fngmhnnpilhplaeedifhccceomclgfbg) or [Get cookies.txt](https://chrome.google.com/webstore/detail/get-cookiestxt/bgaddhkoddajcdgocldbbfleckgcbcid). Note that the cookie file *must* be in **Mozilla/Netscape format** and the first line of the cookies file must be either `# HTTP Cookie File` or `# Netscape HTTP Cookie File`. See [here](https://github.com/ytdl-org/youtube-dl/#how-do-i-pass-cookies-to-youtube-dl) for more.
+
+Once the cookie file is valid, launching the program with the `--subs` option will bring up the most recent videos from the user's subscription feed.
 
 #### Options
 
