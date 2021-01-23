@@ -57,6 +57,7 @@ The following options are available:
 * `--subs`: Fetch videos from a YouTube account's subscription feed instead of using a search query
 * `--n [num]` *or* `--search-size [num]` : Fetch a maximum of `num` videos
 * `--force-no-cache`: Prevent the program from reading from or writing to the cache
+* `--force-no-history`: Disable the search history
 * `--config [file]`: Use `file` as the configuration file
 
 ## Configuration
@@ -69,4 +70,5 @@ The options that can currently be configured are:
 * `max_cache_age` [int]: How long in seconds before a cache entry expires
 * `data_dir` [string]: The directory where internal data is stored
 * `force_no_cache` [bool]: When true, prevent the program from reading from or writing to the cache
+* `force_no_history` [bool]: When true, disable the search history functionality
 * `subs_mode` [bool]: When true, fetch videos from a YouTube account's subscription feed instead of using a search query

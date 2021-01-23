@@ -57,11 +57,12 @@ max_history_size=50
 max_cache_age=60
 data_dir=".data"
 force_no_cache=false
+force_no_history=false
 subs_mode=false
 
 ## (Re)write default config
 
-jq -n --arg search_size "$search_size" --arg max_history_size "$max_history_size" --arg max_cache_age "$max_cache_age" --arg data_dir "$data_dir" --arg force_no_cache "$force_no_cache" --arg subs_mode "$subs_mode" '{search_size: $search_size, max_history_size: $max_history_size, max_cache_age: $max_cache_age, data_dir: $data_dir, force_no_cache: $force_no_cache, subs_mode: $subs_mode}' > "$default_configfile"
+jq -n --arg search_size "$search_size" --arg max_history_size "$max_history_size" --arg max_cache_age "$max_cache_age" --arg data_dir "$data_dir" --arg force_no_cache "$force_no_cache" --arg force_no_history "$force_no_history" --arg subs_mode "$subs_mode" '{search_size: $search_size, max_history_size: $max_history_size, max_cache_age: $max_cache_age, data_dir: $data_dir, force_no_cache: $force_no_cache, force_no_history: $force_no_history, subs_mode: $subs_mode}' > "$default_configfile"
 
 ## Define functions
 
@@ -91,6 +92,7 @@ load_config () {
 		max_cache_age=$(echo "$config" | jq -r --arg default "$max_cache_age" '. | if has("max_cache_age") then .max_cache_age else $default end')
 		data_dir=$(echo "$config" | jq -r --arg default "$data_dir" '. | if has("data_dir") then .data_dir else $default end')
 		force_no_cache=$(echo "$config" | jq -r --arg default "$force_no_cache" '. | if has("force_no_cache") then .force_no_cache else $default end')
+		force_no_history=$(echo "$config" | jq -r --arg default "$force_no_history" '. | if has("force_no_history") then .force_no_history else $default end')
 		subs_mode=$(echo "$config" | jq -r --arg default "$subs_mode" '. | if has("subs_mode") then .subs_mode else $default end')
 	fi
 
@@ -274,6 +276,10 @@ process_args () {
 						force_no_cache=true
 						shift
 						;;
+					--force-no-history)
+						force_no_history=true
+						shift
+						;;
 					--config)
 						passed_configfile="$2"
 						load_config
@@ -291,7 +297,13 @@ do_search () {
 	then
 		find_video "https://www.youtube.com/feed/subscriptions"
 	else
-		search_query=$(tac "$historyfile" | rofi -dmenu -i -p "Search YouTube" -no-show-icons -theme-str 'entry { placeholder: "Enter text or select recent search..."; }' -l $([[ $history_size -lt 10 ]] && echo "$history_size" || echo 10) -scroll-method 0)
+		if [[ "$force_no_history" != "true" ]]
+		then
+			local history_entries=$(tac "$historyfile")
+		else
+			history_size=0
+		fi
+		search_query=$(echo "$history_entries" | rofi -dmenu -i -p "Search YouTube" -no-show-icons -theme-str 'entry { placeholder: "Enter text or select recent search..."; }' -l $([[ $history_size -lt 10 ]] && echo "$history_size" || echo 10) -scroll-method 0)
 		if [[ "$search_query" =~ (https?\:\/\/)?(www\.)?(youtube\.com|youtu\.?be)\/.+$ ]]
 		then
 			selection="$search_query"
@@ -327,4 +339,4 @@ load_config
 process_args "$@"
 do_search
 play_video
-update_history
+[[ "$force_no_history" != "true" ]] && update_history

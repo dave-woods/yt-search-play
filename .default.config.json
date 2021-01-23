@@ -4,5 +4,6 @@
   "max_cache_age": "60",
   "data_dir": ".data",
   "force_no_cache": "false",
+  "force_no_history": "false",
   "subs_mode": "false"
 }
