@@ -42,11 +42,11 @@ Once launched, a rofi window will appear. You can type in your search query at t
 
 To display just a particular channel's videos, you can use the "@" symbol before the channel's name to find their most recent uploads. For example, typing `@drawfee` will bring up the most recent videos from [Drawfee Show](https://www.youtube.com/c/drawfee). **Note**: this currently only works for channels which have a human-readable channel ID.
 
-#### Accessing subscription feed
+#### Accessing subscription feed or Watch Later playlist
 
-In order for the program to be able to access a user's YouTube subscription feed, a Netscape-format `cookies.txt` file must be placed in the data directory (default `.data`) which contains the login credentials. The specific cookies needed can be obtained by logging into YouTube the normal way and then using a browser extension to export the file, such as [EditThisCookie](https://chrome.google.com/webstore/detail/editthiscookie/fngmhnnpilhplaeedifhccceomclgfbg) or [Get cookies.txt](https://chrome.google.com/webstore/detail/get-cookiestxt/bgaddhkoddajcdgocldbbfleckgcbcid). Note that the cookie file *must* be in **Mozilla/Netscape format** and the first line of the cookies file must be either `# HTTP Cookie File` or `# Netscape HTTP Cookie File`. See [here](https://github.com/ytdl-org/youtube-dl/#how-do-i-pass-cookies-to-youtube-dl) for more.
+In order for the program to be able to access a user's YouTube subscription feed or Watch Later playlist, a Netscape-format `cookies.txt` file must be placed in the data directory (default `.data`) which contains the login credentials. The specific cookies needed can be obtained by logging into YouTube the normal way and then using a browser extension to export the file, such as [EditThisCookie](https://chrome.google.com/webstore/detail/editthiscookie/fngmhnnpilhplaeedifhccceomclgfbg) or [Get cookies.txt](https://chrome.google.com/webstore/detail/get-cookiestxt/bgaddhkoddajcdgocldbbfleckgcbcid). Note that the cookie file *must* be in **Mozilla/Netscape format** and the first line of the cookies file must be either `# HTTP Cookie File` or `# Netscape HTTP Cookie File`. See [here](https://github.com/ytdl-org/youtube-dl/#how-do-i-pass-cookies-to-youtube-dl) for more.
 
-Once the cookie file is valid, launching the program with the `--subs` option will bring up the most recent videos from the user's subscription feed.
+Once the cookie file is valid, launching the program with the `--subs` option will bring up the most recent videos from the user's subscription feed. Using the `--wl` option will grab videos from the top of the user's Watch Later playlist.
 
 #### Options
 
@@ -55,7 +55,10 @@ The following options are available:
 * `--clear-history`: Clear the search history and exit
 * `--clear-cache`: Clear the cache and exit
 * `--subs`: Fetch videos from a YouTube account's subscription feed instead of using a search query
+* `--wl`: Fetch videos from a YouTube account's Watch Later playlist instead of using a search query
 * `--n [num]` *or* `--search-size [num]` : Fetch a maximum of `num` videos
+* `--reverse`: Reverse the order of the displayed videos
+* `--use-max-downloads`: This uses youtube-dl's `--max-downloads` flag instead of `--playlist-end` internally (see configuration below)
 * `--force-no-cache`: Prevent the program from reading from or writing to the cache
 * `--force-no-history`: Disable the search history
 * `--config [file]`: Use `file` as the configuration file
@@ -65,10 +68,14 @@ The following options are available:
 The default configuration file is `.default.config.json` which is located in the same directory as the script. This file should not be edited, as it will be overwritten when the script executes. Users can override all or part of this default by providing a file called `config.json` in either the same directory as the script or in `~/.config/yt-search-play/`, or by passing the file at runtime.
 
 The options that can currently be configured are:
-* `search_size` [int]: The (maximum) number of videos fetched when searching
-* `max_history_size` [int]: The maximum number of history entries displayed
-* `max_cache_age` [int]: How long in seconds before a cache entry expires
-* `data_dir` [string]: The directory where internal data is stored
-* `force_no_cache` [bool]: When true, prevent the program from reading from or writing to the cache
-* `force_no_history` [bool]: When true, disable the search history functionality
-* `subs_mode` [bool]: When true, fetch videos from a YouTube account's subscription feed instead of using a search query
+* `search_size` [int]: The (maximum) number of videos fetched when searching.
+* `max_history_size` [int]: The maximum number of history entries displayed.
+* `max_cache_age` [int]: How long in seconds before a cache entry expires.
+* `data_dir` [string]: The directory where internal data is stored.
+* `force_no_cache` [bool]: When true, prevent the program from reading from or writing to the cache.
+* `force_no_history` [bool]: When true, disable the search history functionality.
+* `subs_mode` [bool]: When true, fetch videos from a YouTube account's subscription feed instead of using a search query.
+* `wl_mode` [bool]: When true, fetch videos from a YouTube account's Watch Later playlist instead of using a search query.
+* `reverse` [true|false|'wl']: When true, reverse the order of the fetched videos, or only when using `wl_mode` if set to `'wl'`.
+* `use_max_downloads` [true|false|'wl']: When true, youtube-dl's `--max-downloads` flag will be used internally instead of `--playlist-end`. This may cause a performance impact, and will not have a noticeable difference except when used with the `--reverse` flag, but it will ensure the end of the playlist is fetched rather then just the first N videos reversed. When set to `'wl'`, it will only be true when `wl_mode` is true.
+
