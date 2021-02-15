@@ -59,10 +59,11 @@ data_dir=".data"
 force_no_cache=false
 force_no_history=false
 subs_mode=false
+wl_mode=false
 
 ## (Re)write default config
 
-jq -n --arg search_size "$search_size" --arg max_history_size "$max_history_size" --arg max_cache_age "$max_cache_age" --arg data_dir "$data_dir" --arg force_no_cache "$force_no_cache" --arg force_no_history "$force_no_history" --arg subs_mode "$subs_mode" '{search_size: $search_size, max_history_size: $max_history_size, max_cache_age: $max_cache_age, data_dir: $data_dir, force_no_cache: $force_no_cache, force_no_history: $force_no_history, subs_mode: $subs_mode}' > "$default_configfile"
+jq -n --arg search_size "$search_size" --arg max_history_size "$max_history_size" --arg max_cache_age "$max_cache_age" --arg data_dir "$data_dir" --arg force_no_cache "$force_no_cache" --arg force_no_history "$force_no_history" --arg subs_mode "$subs_mode" --arg wl_mode "$wl_mode" '{search_size: $search_size, max_history_size: $max_history_size, max_cache_age: $max_cache_age, data_dir: $data_dir, force_no_cache: $force_no_cache, force_no_history: $force_no_history, subs_mode: $subs_mode, wl_mode: $wl_mode}' > "$default_configfile"
 
 ## Define functions
 
@@ -94,6 +95,7 @@ load_config () {
 		force_no_cache=$(echo "$config" | jq -r --arg default "$force_no_cache" '. | if has("force_no_cache") then .force_no_cache else $default end')
 		force_no_history=$(echo "$config" | jq -r --arg default "$force_no_history" '. | if has("force_no_history") then .force_no_history else $default end')
 		subs_mode=$(echo "$config" | jq -r --arg default "$subs_mode" '. | if has("subs_mode") then .subs_mode else $default end')
+		wl_mode=$(echo "$config" | jq -r --arg default "$wl_mode" '. | if has("wl_mode") then .wl_mode else $default end')
 	fi
 
 	if ! [[ "$search_size" =~ ^[0-9]+$ ]]
@@ -193,7 +195,7 @@ find_video () {
 	selection=
 	url=
 
-	if [[ "$subs_mode" == "true" ]]
+	if [[ "$subs_mode" == "true" ]] || [[ "$wl_mode" == "true" ]]
 	then
 		# check/update this file if sub feed breaks
 		if [[ -s "$cookiefile" ]]
@@ -267,6 +269,10 @@ process_args () {
 						subs_mode=true
 						shift
 						;;
+					--wl)
+						wl_mode=true
+						shift
+						;;
 					--n|--search-size)
 						search_size="$2"
 						shift
@@ -296,6 +302,9 @@ do_search () {
 	if [[ "$subs_mode" == "true" ]]
 	then
 		find_video "https://www.youtube.com/feed/subscriptions"
+	elif [[ "$wl_mode" == "true" ]]
+	then
+		find_video "https://www.youtube.com/playlist?list=WL"
 	else
 		if [[ "$force_no_history" != "true" ]]
 		then
