@@ -60,10 +60,12 @@ force_no_cache=false
 force_no_history=false
 subs_mode=false
 wl_mode=false
+reverse_mode=false
+use_max_downloads=false
 
 ## (Re)write default config
 
-jq -n --arg search_size "$search_size" --arg max_history_size "$max_history_size" --arg max_cache_age "$max_cache_age" --arg data_dir "$data_dir" --arg force_no_cache "$force_no_cache" --arg force_no_history "$force_no_history" --arg subs_mode "$subs_mode" --arg wl_mode "$wl_mode" '{search_size: $search_size, max_history_size: $max_history_size, max_cache_age: $max_cache_age, data_dir: $data_dir, force_no_cache: $force_no_cache, force_no_history: $force_no_history, subs_mode: $subs_mode, wl_mode: $wl_mode}' > "$default_configfile"
+jq -n --arg search_size "$search_size" --arg max_history_size "$max_history_size" --arg max_cache_age "$max_cache_age" --arg data_dir "$data_dir" --arg force_no_cache "$force_no_cache" --arg force_no_history "$force_no_history" --arg subs_mode "$subs_mode" --arg wl_mode "$wl_mode" --arg reverse_mode "$reverse_mode" --arg use_max_downloads "$use_max_downloads" '{search_size: $search_size, max_history_size: $max_history_size, max_cache_age: $max_cache_age, data_dir: $data_dir, force_no_cache: $force_no_cache, force_no_history: $force_no_history, subs_mode: $subs_mode, wl_mode: $wl_mode, reverse_mode: $reverse_mode, use_max_downloads: $use_max_downloads}' > "$default_configfile"
 
 ## Define functions
 
@@ -96,6 +98,8 @@ load_config () {
 		force_no_history=$(echo "$config" | jq -r --arg default "$force_no_history" '. | if has("force_no_history") then .force_no_history else $default end')
 		subs_mode=$(echo "$config" | jq -r --arg default "$subs_mode" '. | if has("subs_mode") then .subs_mode else $default end')
 		wl_mode=$(echo "$config" | jq -r --arg default "$wl_mode" '. | if has("wl_mode") then .wl_mode else $default end')
+		reverse_mode=$(echo "$config" | jq -r --arg default "$reverse_mode" '. | if has("reverse_mode") then .reverse_mode else $default end')
+		use_max_downloads=$(echo "$config" | jq -r --arg default "$use_max_downloads" '. | if has("use_max_downloads") then .use_max_downloads else $default end')
 	fi
 
 	if ! [[ "$search_size" =~ ^[0-9]+$ ]]
@@ -206,6 +210,21 @@ find_video () {
 			exit 1
 		fi
 	fi
+	
+	if [[ "$reverse_mode" == "true" ]] || ([[ "$reverse_mode" == "wl" ]] && [[ "$wl_mode" == "true" ]])
+	then
+		reverse="--playlist-reverse"
+	else
+		reverse=
+	fi
+
+	if [[ "$use_max_downloads" == "true" ]] || ([[ "$use_max_downloads" == "wl" ]] && [[ "$wl_mode" == "true" ]])
+	then
+		playlist_ender="--max-downloads"
+	else
+		playlist_ender="--playlist-end"
+	fi
+
 	[[ "$force_no_cache" != "true" ]] && local cache_result=$(read_from_cache "$search_url")
 	
 	if [[ -z "$cache_result" ]]
@@ -213,7 +232,7 @@ find_video () {
 		temp_res=$(mktemp /tmp/ysp_res.XXXXXXXX)
 		temp_pid=$(mktemp /tmp/ysp_pid.XXXXXXXX)
 		
-		( youtube-dl -i --playlist-end $search_size $include_cookies -j "$search_url" & echo $! >&3 ) 3>"$temp_pid" \
+		( youtube-dl -i $reverse $playlist_ender $search_size $include_cookies -j "$search_url" & echo $! >&3 ) 3>"$temp_pid" \
 			| jq --unbuffered -r '. | "\(.fulltitle) :: \(.uploader) => \(.webpage_url)"' > "$temp_res" &
 		ytdl_pid=$(<"$temp_pid")
 		rm -f "$temp_pid"
@@ -271,6 +290,14 @@ process_args () {
 						;;
 					--wl)
 						wl_mode=true
+						shift
+						;;
+					--reverse)
+						reverse_mode=true
+						shift
+						;;
+					--use-max-downloads)
+						use_max_downloads=true
 						shift
 						;;
 					--n|--search-size)
