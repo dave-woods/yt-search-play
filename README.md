@@ -86,7 +86,7 @@ The following is located at `~/.config/yt-search-play/config.json`. It sets the 
 ```
 {
   "max_cache_age": "600",
-	"data_dir": "~/.config/yt-search-play/",
+  "data_dir": "~/.config/yt-search-play/",
   "reverse_mode": "wl",
   "use_max_downloads": "wl"
 }
