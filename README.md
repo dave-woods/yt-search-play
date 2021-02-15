@@ -77,5 +77,17 @@ The options that can currently be configured are:
 * `subs_mode` [bool]: When true, fetch videos from a YouTube account's subscription feed instead of using a search query.
 * `wl_mode` [bool]: When true, fetch videos from a YouTube account's Watch Later playlist instead of using a search query.
 * `reverse` [true|false|'wl']: When true, reverse the order of the fetched videos, or only when using `wl_mode` if set to `'wl'`.
-* `use_max_downloads` [true|false|'wl']: When true, youtube-dl's `--max-downloads` flag will be used internally instead of `--playlist-end`. This may cause a performance impact, and will not have a noticeable difference except when used with the `--reverse` flag, but it will ensure the end of the playlist is fetched rather then just the first N videos reversed. When set to `'wl'`, it will only be true when `wl_mode` is true.
+* `use_max_downloads` [true|false|'wl']: When true, youtube-dl's `--max-downloads` flag will be used internally instead of `--playlist-end`. This ensures that the end of the playlist is fetched rather then just the first N videos reversed. **NB:** This may cause a performance impact, and will not have a noticeable difference except when used with the `reverse` option set to true. When set to `'wl'`, it will only be true when `wl_mode` is true.
 
+## Example config
+
+The following is located at `~/.config/yt-search-play/config.json`. It sets the maximum time before the cache expires to be 10 minutes, sets the data directory to be the same as the config directory, and says that when accessing the user's Watch Later playlist fetch from the bottom of the list instead of the top by setting reverse mode and the use of max downloads to be true when watch later mode is true.
+
+```
+{
+  "max_cache_age": "600",
+	"data_dir": "~/.config/yt-search-play/",
+  "reverse_mode": "wl",
+  "use_max_downloads": "wl"
+}
+```
