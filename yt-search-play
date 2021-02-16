@@ -184,14 +184,14 @@ write_to_cache () {
 
 read_from_cache () {
 	if [[ -s "$cachefile" ]]
-  then
+	then
 		purge_expired_cache
-    local entry_found=$(jq --arg sel "$1" '.[] | select(.entry == $sel)' "$cachefile")
-    if [[ -n "$entry_found" ]]
-    then
-      echo "$entry_found"
-    fi
-  fi 
+		local entry_found=$(jq --arg sel "$1" '.[] | select(.entry == $sel)' "$cachefile")
+		if [[ -n "$entry_found" ]]
+		then
+			echo "$entry_found"
+		fi
+	fi 
 }
 
 find_video () {
@@ -247,13 +247,13 @@ find_video () {
 
 		[[ "$force_no_cache" != "true" ]] && write_to_cache "$search_url" $ytdl_pid || (kill $ytdl_pid 2>/dev/null; rm -f "$temp_res") &
 	else
-		local cache_value=$(echo "$cache_result" | jq -r '.cache')
-    idx=$(echo "$cache_value" | stdbuf -o0 awk 'BEGIN{FS=OFS=" => "}{NF--; print}' \
-      | rofi -dmenu -i -p 'Select Video' -no-show-icons -l 10 -scroll-method 0 -format d -async-pre-read 0 &)
-    if [[ -n "$idx" ]]
-    then
-      selection=$(echo "$cache_value" | sed "${idx}q;d")
-    fi
+		local cache_value=$(echo "$cache_result" | jq -r '.cache' | head -n $search_size)
+		idx=$(echo "$cache_value" | stdbuf -o0 awk 'BEGIN{FS=OFS=" => "}{NF--; print}' \
+			| rofi -dmenu -i -p 'Select Video' -no-show-icons -l 10 -scroll-method 0 -format d -async-pre-read 0 &)
+		if [[ -n "$idx" ]]
+		then
+			selection=$(echo "$cache_value" | sed "${idx}q;d")
+		fi
 	fi
 
 	url=$(echo "$selection" | awk 'BEGIN{FS=OFS=" => "}{print $NF}')
