@@ -4,7 +4,7 @@ A utility which uses [rofi](https://github.com/davatorium/rofi), [youtube-dl](ht
 
 When the script is run, a rofi window will appear. The user can type to search, or can filter and select from recent searches. If a YouTube URL is part of the search, that video will be opened in MPV, otherwise a new rofi window will be displayed showing a list of videos that match the search terms. The user can then filter and select one of these videos, which will be opened in MPV.
 
-The program can also fetch videos from a specified YouTube account's subscription feed instead.
+The program can also fetch videos from a specified YouTube account's subscription feed or Watch Later playlist instead.
 
 While this script does not require an API key to run, this does slow down the searching process -- to combat this, relevant results will begin to display immediately and can be selected before all results have appeared, and recent searches will be cached and only refetched after a set amount of time has passed (by default 1 minute).
 
@@ -79,7 +79,7 @@ The options that can currently be configured are:
 * `reverse` [true|false|'wl']: When true, reverse the order of the fetched videos, or only when using `wl_mode` if set to `'wl'`.
 * `use_max_downloads` [true|false|'wl']: When true, youtube-dl's `--max-downloads` flag will be used internally instead of `--playlist-end`. This ensures that the end of the playlist is fetched rather then just the first N videos reversed. **NB:** This may cause a performance impact, and will not have a noticeable difference except when used with the `reverse` option set to true. When set to `'wl'`, it will only be true when `wl_mode` is true.
 
-## Example config
+#### Example config
 
 The following is located at `~/.config/yt-search-play/config.json`. It sets the maximum time before the cache expires to be 10 minutes, sets the data directory to be the same as the config directory, and says that when accessing the user's Watch Later playlist fetch from the bottom of the list instead of the top by setting reverse mode and the use of max downloads to be true when watch later mode is true.
 
