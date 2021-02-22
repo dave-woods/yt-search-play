@@ -239,16 +239,9 @@ find_video () {
 		ytdl_pid=$(<"$temp_pid")
 		rm -f "$temp_pid"
 
-		#TODO: tail memory leak
-		idx=$(tail -f "$temp_res" | stdbuf -o0 awk 'BEGIN{FS=OFS=" => "}{NF--; print}' \
+		idx=$(tail -q --follow=name "$temp_res" 2>/dev/null | stdbuf -o0 awk 'BEGIN{FS=OFS=" => "}{NF--; print}' \
 			| rofi -dmenu -i -p 'Select Video' -no-show-icons -l 10 -scroll-method 0 -format d -async-pre-read 0 &)
-		# tr=$(mktemp /tmp/ysp_tr.XXXXXXXX)
-		# tail -f "$temp_res" > >(stdbuf -o0 awk 'BEGIN{FS=OFS=" => "}{NF--; print}' \
-			# | rofi -dmenu -i -p 'Select Video' -no-show-icons -l 10 -scroll-method 0 -format d -async-pre-read 0 > "$tr") &
-		# pkill -P $$ -x tail
-		# idx=$(<"$tr")
-		# rm -f "$tr"
-		
+
 		if [[ -n "$idx" ]] && [[ $idx -ge 1 ]] && [[ -s "$temp_res" ]]
 		then
 			selection=$(sed "${idx}q;d" "$temp_res")
