@@ -137,6 +137,7 @@ load_config () {
 		touch -a "$historyfile"
 	fi
 	history_size=$(< "$historyfile" wc -l 2>/dev/null || echo 0)
+	playlist_start=1
 }
 
 clear_history () {
@@ -176,7 +177,7 @@ write_to_cache () {
   
 		if [[ -n "$cache" ]]
 		then
-			jq --arg sel "$1" 'del(.[] | select(.entry == $sel))' "$cachefile" | jq --arg sel "$1" --arg time "$(date +%s)" --arg cc "$cache" '. += [{entry: $sel, time: $time, cache: $cc}]' > "$cachefile.tmp" && mv "$cachefile.tmp" "$cachefile"
+			jq --arg sel "$1" 'del(.[] | select(.entry == $sel))' "$cachefile" | jq --arg sel "$1" --arg time "$(date +%s)" --arg cc "$cache" --arg size "$(echo "$cache" | grep -c "^")" '. += [{entry: $sel, time: $time, cache: $cc, size: $size}]' > "$cachefile.tmp" && mv "$cachefile.tmp" "$cachefile"
 		fi
 	fi
 	rm -f "$temp_res"
@@ -187,11 +188,15 @@ read_from_cache () {
 	then
 		purge_expired_cache
 		local entry_found=$(jq --arg sel "$1" '.[] | select(.entry == $sel)' "$cachefile")
-		# make sure the cache is only returned if there are enough entries
-		#TODO: save cache size when writing so search can resume from end of cache
-		if [[ -n "$entry_found" ]] && [[ $(echo "$entry_found" | jq -r '.cache' | grep -c "^") -ge $search_size ]]
+		if [[ -n "$entry_found" ]] 
 		then
-			echo "$entry_found"
+			cache_size=$(echo "$entry_found" | jq -r '.size')
+			if [[ $cache_size -lt $search_size ]]
+			then
+				partial_cache="true"
+				playlist_start=$((cache_size+1))
+			fi
+			cache_result="$entry_found"
 		fi
 	fi 
 }
@@ -227,15 +232,21 @@ find_video () {
 		playlist_ender="--playlist-end"
 	fi
 
-	[[ "$force_no_cache" != "true" ]] && local cache_result=$(read_from_cache "$search_url")
+	[[ "$force_no_cache" != "true" ]] && read_from_cache "$search_url"
 	
-	if [[ -z "$cache_result" ]]
+	if [[ -z "$cache_result" ]] || [[ "$partial_cache" == "true" ]]
 	then
 		temp_res=$(mktemp /tmp/ysp_res.XXXXXXXX)
 		temp_pid=$(mktemp /tmp/ysp_pid.XXXXXXXX)
+
+		if [[ "$partial_cache" == "true" ]]
+		then
+			local cache_value=$(echo "$cache_result" | jq -r '.cache')
+			echo -e "$cache_value" > "$temp_res"
+		fi
 		
-		( youtube-dl -i $reverse $playlist_ender $search_size $include_cookies -j "$search_url" & echo $! >&3 ) 3>"$temp_pid" \
-			| jq --unbuffered -r '. | "\(.fulltitle) :: \(.uploader) => \(.webpage_url)"' > "$temp_res" &
+		( youtube-dl -i $reverse --playlist-start $playlist_start $playlist_ender $search_size $include_cookies -j "$search_url" & echo $! >&3 ) 3>"$temp_pid" \
+			| jq --unbuffered -r '. | "\(.fulltitle) :: \(.uploader) => \(.webpage_url)"' >> "$temp_res" &
 		ytdl_pid=$(<"$temp_pid")
 		rm -f "$temp_pid"
 
