@@ -6,8 +6,7 @@ When the script is run, a rofi window will appear. The user can type to search, 
 
 The program can also fetch videos from a specified YouTube account's subscription feed or Watch Later playlist instead.
 
-While this script does not require an API key to run, this does slow down the searching process -- to combat this, relevant results will begin to display immediately and can be selected before all results have appeared, and recent searches will be cached and only refetched after a set amount of time has passed (by default 1 minute).
-
+An older version of the script retrieved video info one video at a time, and was a bit slow, so relied on caching the results of searches in order to speed up usage. As a result, by default, searches are cached for 1 minute, but this can be disabled by using the `--force-no-cache` flag. The cache time can also be extended if desired, and you can set new defaults with a config file.
 ## Dependencies
 
 Listed versions below have been tested. Newer releases should work fine, but older versions may have problems. Note that the versions located in the standard package managers may be outdated -- see the relevant links above for the most up to date information on installing.
@@ -77,7 +76,7 @@ The options that can currently be configured are:
 * `subs_mode` [bool]: When true, fetch videos from a YouTube account's subscription feed instead of using a search query.
 * `wl_mode` [bool]: When true, fetch videos from a YouTube account's Watch Later playlist instead of using a search query.
 * `reverse` [true|false|'wl']: When true, reverse the order of the fetched videos, or only when using `wl_mode` if set to `'wl'`.
-* `use_max_downloads` [true|false|'wl']: When true, youtube-dl's `--max-downloads` flag will be used internally instead of `--playlist-end`. This ensures that the end of the playlist is fetched rather then just the first N videos reversed. **NB:** This may cause a performance impact, and will not have a noticeable difference except when used with the `reverse` option set to true. When set to `'wl'`, it will only be true when `wl_mode` is true.
+* `use_max_downloads` [true|false|'wl']: When true, youtube-dl's `--max-downloads` flag will be used internally instead of `--playlist-end`. This ensures that the end of the playlist is fetched rather then just the first N videos reversed. **NB:** This may cause a performance impact, and will not have a noticeable difference except when used with the `reverse` option set to true. When set to `'wl'`, it will only be true when `wl_mode` is true. Note also that this flag will be deprecated in the future and was only needed initially due to how youtube-dl mixes flags (see [issue here](https://github.com/ytdl-org/youtube-dl/issues/25943) and [related PR](https://github.com/ytdl-org/youtube-dl/pull/24487)).
 
 #### Example config
 

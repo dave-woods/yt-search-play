@@ -225,6 +225,7 @@ find_video () {
 		reverse=
 	fi
 
+	# this will be deprecated in future
 	if [[ "$use_max_downloads" == "true" ]] || ([[ "$use_max_downloads" == "wl" ]] && [[ "$wl_mode" == "true" ]])
 	then
 		playlist_ender="--max-downloads"
@@ -245,8 +246,10 @@ find_video () {
 			echo -e "$cache_value" > "$temp_res"
 		fi
 		
-		( youtube-dl -i $reverse --playlist-start $playlist_start $playlist_ender $search_size $include_cookies -j "$search_url" & echo $! >&3 ) 3>"$temp_pid" \
-			| jq --unbuffered -r '. | "\(.fulltitle) :: \(.uploader) => \(.webpage_url)"' >> "$temp_res" &
+		# using head -n $search_size is only necessary until implementation of
+		# https://github.com/ytdl-org/youtube-dl/pull/24487
+		( youtube-dl -i $reverse --playlist-start $playlist_start $playlist_ender $search_size $include_cookies -j "$search_url" --flat-playlist & echo $! >&3 ) 3>"$temp_pid" \
+			| head -n $search_size | jq --unbuffered -r '. | "\(.title) :: \(.uploader) => https://www.youtube.com/watch?v=\(.url)"' >> "$temp_res" &
 		ytdl_pid=$(<"$temp_pid")
 		rm -f "$temp_pid"
 
