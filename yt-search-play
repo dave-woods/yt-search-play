@@ -106,6 +106,13 @@ load_config () {
 	if [[ -n "$configfile" ]]
 	then
 		config=$(jq '.' "$configfile")
+		
+		if [[ -z "$config" ]]
+		then
+			>&2 echo "Error reading config in $configfile."
+			exit 1
+		fi
+
 		search_size=$(echo "$config" | jq -r --arg default "$search_size" '. | if has("search_size") then .search_size else $default end')
 		max_history_size=$(echo "$config" | jq -r --arg default "$max_history_size" '. | if has("max_history_size") then .max_history_size else $default end')
 		max_cache_age=$(echo "$config" | jq -r --arg default "$max_cache_age" '. | if has("max_cache_age") then .max_cache_age else $default end')
