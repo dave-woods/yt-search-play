@@ -69,6 +69,22 @@ jq -n --arg search_size "$search_size" --arg max_history_size "$max_history_size
 
 ## Define functions
 
+print_help () {
+echo -en "The following options are available:
+--generate-config: Generate a default configuration file and exit
+--clear-history: Clear the search history and exit
+--clear-cache: Clear the cache and exit
+-s|--subs: Fetch videos from a YouTube account's subscription feed instead of using a search query
+-wl|--watch-later: Fetch videos from a YouTube account's Watch Later playlist instead of using a search query
+-n [num]|--search-size [num]: Fetch a maximum of num videos
+-r|--reverse: Reverse the order of the displayed videos
+--use-max-downloads: This uses youtube-dl's --max-downloads flag instead of --playlist-end internally (see configuration below)
+-C|--force-no-cache: Prevent the program from reading from or writing to the cache
+-H|--force-no-history: Disable the search history
+--config [file]: Use file as the configuration file
+-h|--help: Print help and exit"
+}
+
 find_config () {
 	if [[ -s "$passed_configfile" ]]
 	then
@@ -300,15 +316,15 @@ process_args () {
 			do
 				key="$1"
 				case $key in
-					--subs)
+					-s|--subs)
 						subs_mode=true
 						shift
 						;;
-					--wl)
+					-wl|--watch-later)
 						wl_mode=true
 						shift
 						;;
-					--reverse)
+					-r|--reverse)
 						reverse_mode=true
 						shift
 						;;
@@ -316,16 +332,16 @@ process_args () {
 						use_max_downloads=true
 						shift
 						;;
-					--n|--search-size)
+					-n|--search-size)
 						search_size="$2"
 						shift
 						shift
 						;;
-					--force-no-cache)
+					-C|--force-no-cache)
 						force_no_cache=true
 						shift
 						;;
-					--force-no-history)
+					-H|--force-no-history)
 						force_no_history=true
 						shift
 						;;
@@ -334,6 +350,14 @@ process_args () {
 						load_config
 						shift
 						shift
+						;;
+					-h|--help)
+						echo "$(print_help)"
+						exit
+						;;
+					*)
+						echo "Unrecognised option $1" >&2
+						exit 1
 						;;
 				esac
 			done

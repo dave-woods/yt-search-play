@@ -58,14 +58,15 @@ The following options are available:
 * `--generate-config`: Generate a default configuration file and exit
 * `--clear-history`: Clear the search history and exit
 * `--clear-cache`: Clear the cache and exit
-* `--subs`: Fetch videos from a YouTube account's subscription feed instead of using a search query
-* `--wl`: Fetch videos from a YouTube account's Watch Later playlist instead of using a search query
-* `--n [num]` *or* `--search-size [num]` : Fetch a maximum of `num` videos
-* `--reverse`: Reverse the order of the displayed videos
+* `-s` *or* `--subs`: Fetch videos from a YouTube account's subscription feed instead of using a search query
+* `-wl` *or* `--watch-later`: Fetch videos from a YouTube account's Watch Later playlist instead of using a search query
+* `-n [num]` *or* `--search-size [num]`: Fetch a maximum of `num` videos
+* `-r` *or* `--reverse`: Reverse the order of the displayed videos
 * `--use-max-downloads`: This uses youtube-dl's `--max-downloads` flag instead of `--playlist-end` internally (see configuration below)
-* `--force-no-cache`: Prevent the program from reading from or writing to the cache
-* `--force-no-history`: Disable the search history
+* `-C` *or* `--force-no-cache`: Prevent the program from reading from or writing to the cache
+* `-H` *or* `--force-no-history`: Disable the search history
 * `--config [file]`: Use `file` as the configuration file
+* `-h` *or* `--help`: Print help and exit
 
 ## Configuration
 
