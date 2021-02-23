@@ -33,8 +33,13 @@ chmod +x yt-search-play
 ./yt-search-play --generate-config
 ```
 
-Once you have the file downloaded and executable, you might want to add the script's directory to your PATH variable to make it executable from anywhere without having to specify the full path to it.
+Once you have the file downloaded and executable, you might want to add the script's directory to your PATH variable to make it executable from anywhere without having to specify the full path to it. The simplest way is to symlink to your user `bin` directory.
 
+```
+ln -s ./yt-search-play ~/bin/yt-search-play
+# or
+ln -s ./yt-search-play ~/.local/bin/yt-search-play
+```
 ### Using the interface
 
 Once launched, a rofi window will appear. You can type in your search query at the prompt, and hit the **Enter key** to begin searching YouTube for matching videos. If you have used the program before, your recent searches will be displayed, and you can use the **arrow keys** to navigate. Hit the **Enter key** to select the highlighted history entry. When you have history entries available, typing will filter the entries -- if what you type doesn't match any entries, a search will be performed instead. If your query matches a history entry, but you want to perform a search instead of selecting the entry, hit **Ctrl + Enter** to override selecting the history entry.
@@ -85,7 +90,7 @@ The following is located at `~/.config/yt-search-play/config.json`. It sets the 
 ```
 {
   "max_cache_age": "600",
-  "data_dir": "~/.config/yt-search-play/",
+  "data_dir": "~/.config/yt-search-play",
   "reverse_mode": "wl",
   "use_max_downloads": "wl"
 }
