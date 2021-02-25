@@ -67,6 +67,13 @@ use_max_downloads=false
 
 jq -n --arg search_size "$search_size" --arg max_history_size "$max_history_size" --arg max_cache_age "$max_cache_age" --arg data_dir "$data_dir" --arg force_no_cache "$force_no_cache" --arg force_no_history "$force_no_history" --arg subs_mode "$subs_mode" --arg wl_mode "$wl_mode" --arg reverse_mode "$reverse_mode" --arg use_max_downloads "$use_max_downloads" '{search_size: $search_size, max_history_size: $max_history_size, max_cache_age: $max_cache_age, data_dir: $data_dir, force_no_cache: $force_no_cache, force_no_history: $force_no_history, subs_mode: $subs_mode, wl_mode: $wl_mode, reverse_mode: $reverse_mode, use_max_downloads: $use_max_downloads}' > "$default_configfile"
 
+## Cleanup on exit
+trap cleanup EXIT
+cleanup () {
+	echo "Exiting..."
+	[[ -f "$temp_res" ]] &&	rm -f "$temp_res"
+}
+
 ## Define functions
 
 print_help () {
@@ -199,7 +206,6 @@ write_to_cache () {
 	then
 		jq --arg sel "$1" 'del(.[] | select(.entry == $sel))' "$cachefile" | jq --arg sel "$1" --arg time "$(date +%s)" --arg cc "$cache" --arg size "$(grep -c "^" "$temp_res")" '. += [{entry: $sel, time: $time, cache: $cc, size: $size}]' > "$cachefile.tmp" && mv "$cachefile.tmp" "$cachefile"
 	fi
-	rm -f "$temp_res"
 }
 
 read_from_cache () {
@@ -256,7 +262,7 @@ find_video () {
 	
 	if [[ -z "$cache_result" ]] || [[ "$partial_cache" == "true" ]]
 	then
-		temp_res=$(mktemp /tmp/ysp_res.XXXXXXXX)
+		temp_res=$(mktemp /tmp/ysp_results.XXXXXXXX)
 
 		if [[ "$partial_cache" == "true" ]]
 		then
@@ -277,7 +283,7 @@ find_video () {
 			selection=$(sed "${idx}q;d" "$temp_res")
 		fi
 
-		[[ "$force_no_cache" != "true" ]] && write_to_cache "$search_url" || rm -f "$temp_res" &
+		[[ "$force_no_cache" != "true" ]] && write_to_cache "$search_url" &
 	else
 		local cache_value=$(echo "$cache_result" | jq -r '.cache' | head -n $search_size)
 		idx=$(echo "$cache_value" | stdbuf -o0 awk 'BEGIN{FS=OFS=" => "}{NF--; print}' \
