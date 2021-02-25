@@ -188,20 +188,16 @@ purge_expired_cache () {
 }
 
 write_to_cache () {
-	if [[ -n "$2" ]]
-	then
-		if [[ ! -s "$cachefile" ]] || [[ -z "$(cat "$cachefile" | tr -d '[:space:]')" ]]
-  	then
-  	  echo "[]" > "$cachefile"
-  	fi
+	if [[ ! -s "$cachefile" ]] || [[ -z "$(cat "$cachefile" | tr -d '[:space:]')" ]]
+  then
+    echo "[]" > "$cachefile"
+  fi
 
-  	tail --pid="$2" -f /dev/null
-  	local cache=$(<"$temp_res")
+  local cache=$(<"$temp_res")
   
-		if [[ -n "$cache" ]]
-		then
-			jq --arg sel "$1" 'del(.[] | select(.entry == $sel))' "$cachefile" | jq --arg sel "$1" --arg time "$(date +%s)" --arg cc "$cache" --arg size "$(echo "$cache" | grep -c "^")" '. += [{entry: $sel, time: $time, cache: $cc, size: $size}]' > "$cachefile.tmp" && mv "$cachefile.tmp" "$cachefile"
-		fi
+	if [[ -n "$cache" ]]
+	then
+		jq --arg sel "$1" 'del(.[] | select(.entry == $sel))' "$cachefile" | jq --arg sel "$1" --arg time "$(date +%s)" --arg cc "$cache" --arg size "$(grep -c "^" "$temp_res")" '. += [{entry: $sel, time: $time, cache: $cc, size: $size}]' > "$cachefile.tmp" && mv "$cachefile.tmp" "$cachefile"
 	fi
 	rm -f "$temp_res"
 }
@@ -261,7 +257,6 @@ find_video () {
 	if [[ -z "$cache_result" ]] || [[ "$partial_cache" == "true" ]]
 	then
 		temp_res=$(mktemp /tmp/ysp_res.XXXXXXXX)
-		temp_pid=$(mktemp /tmp/ysp_pid.XXXXXXXX)
 
 		if [[ "$partial_cache" == "true" ]]
 		then
@@ -271,25 +266,23 @@ find_video () {
 		
 		# using head -n $search_size is only necessary until implementation of
 		# https://github.com/ytdl-org/youtube-dl/pull/24487
-		( youtube-dl -i $reverse --playlist-start $playlist_start $playlist_ender $search_size $include_cookies -j "$search_url" --flat-playlist & echo $! >&3 ) 3>"$temp_pid" \
-			| head -n $search_size | jq --unbuffered -r '. | "\(.title) :: \(.uploader) => https://www.youtube.com/watch?v=\(.url)"' >> "$temp_res" &
-		ytdl_pid=$(<"$temp_pid")
-		rm -f "$temp_pid"
+		youtube-dl -i $reverse --playlist-start $playlist_start $playlist_ender $search_size $include_cookies -j "$search_url" --flat-playlist | head -n $search_size | jq --unbuffered -r '. | "\(.title) :: \(.uploader) => https://www.youtube.com/watch?v=\(.url)"' >> "$temp_res"
 
-		idx=$(tail -q --follow=name "$temp_res" 2>/dev/null | stdbuf -o0 awk 'BEGIN{FS=OFS=" => "}{NF--; print}' \
-			| rofi -dmenu -i -p 'Select Video' -no-show-icons -l 10 -scroll-method 0 -format d -async-pre-read 0 &)
+		idx=$(cat "$temp_res" | stdbuf -o0 awk 'BEGIN{FS=OFS=" => "}{NF--; print}' | rofi -dmenu -i -p 'Select Video' -no-show-icons -l 10 -scroll-method 0 -format d -async-pre-read 0; exit $?)
+		rofi_exit_code=$?
+		echo "$rofi_exit_code"
 
 		if [[ -n "$idx" ]] && [[ $idx -ge 1 ]] && [[ -s "$temp_res" ]]
 		then
 			selection=$(sed "${idx}q;d" "$temp_res")
 		fi
 
-		[[ "$force_no_cache" != "true" ]] && write_to_cache "$search_url" $ytdl_pid || (kill $ytdl_pid 2>/dev/null; rm -f "$temp_res") &
+		[[ "$force_no_cache" != "true" ]] && write_to_cache "$search_url" || rm -f "$temp_res" &
 	else
 		local cache_value=$(echo "$cache_result" | jq -r '.cache' | head -n $search_size)
 		idx=$(echo "$cache_value" | stdbuf -o0 awk 'BEGIN{FS=OFS=" => "}{NF--; print}' \
 			| rofi -dmenu -i -p 'Select Video' -no-show-icons -l 10 -scroll-method 0 -format d -async-pre-read 0 &)
-		if [[ -n "$idx" ]]
+		if [[ -n "$idx" ]] && [[ $idx -ge 1 ]]
 		then
 			selection=$(echo "$cache_value" | sed "${idx}q;d")
 		fi
