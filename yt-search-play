@@ -179,14 +179,21 @@ clear_cache () {
 }
 
 update_history () {
-	if [[ -n "$history_entry" ]] && [[ "$(tail -n 1 "$historyfile")" != "$history_entry" ]]
+	last_item="$(tail -n 1 "$historyfile")"
+	if [[ -n "$search_query" ]]
 	then
-		echo "$history_entry" >> "$historyfile"
+		sed -i '/'"$search_query"'/d' "$historyfile"
+		echo "$search_query" >> "$historyfile"
+	fi
+	if [[ -n "$url" ]]
+	then
+		sed -i '/'"$selection"'/d' "$historyfile"
+		echo "$selection" >> "$historyfile"
 	fi
 
 	if [[ $history_size -gt $max_history_size ]]
 	then
-		echo $(tail -n $max_history_size "$historyfile") > "$historyfile"
+		echo "$(tail -n $max_history_size "$historyfile")" > "$historyfile"
 	fi
 }
 
@@ -276,14 +283,13 @@ find_video () {
 
 		idx=$(cat "$temp_res" | stdbuf -o0 awk 'BEGIN{FS=OFS=" => "}{NF--; print}' | rofi -dmenu -i -p 'Select Video' -no-show-icons -l 10 -scroll-method 0 -format d -async-pre-read 0; exit $?)
 		rofi_exit_code=$?
-		echo "$rofi_exit_code"
 
 		if [[ -n "$idx" ]] && [[ $idx -ge 1 ]] && [[ -s "$temp_res" ]]
 		then
 			selection=$(sed "${idx}q;d" "$temp_res")
 		fi
 
-		[[ "$force_no_cache" != "true" ]] && write_to_cache "$search_url" &
+		[[ "$force_no_cache" != "true" ]] && write_to_cache "$search_url"
 	else
 		local cache_value=$(echo "$cache_result" | jq -r '.cache' | head -n $search_size)
 		idx=$(echo "$cache_value" | stdbuf -o0 awk 'BEGIN{FS=OFS=" => "}{NF--; print}' \
@@ -407,11 +413,8 @@ do_search () {
 play_video () {
 	if [[ -n "$url" ]]
 	then
-		history_entry="$selection"
 		pkill mpv
 		mpv --really-quiet "$url" &
-	else
-		history_entry="$search_query"
 	fi
 }
 
@@ -420,5 +423,5 @@ play_video () {
 load_config
 process_args "$@"
 do_search
-play_video
 [[ "$force_no_history" != "true" ]] && update_history
+play_video
