@@ -293,8 +293,9 @@ find_video () {
 		[[ "$force_no_cache" != "true" ]] && write_to_cache "$search_url"
 	else
 		local cache_value=$(echo "$cache_result" | jq -r '.cache' | head -n $search_size)
-		idx=$(echo "$cache_value" | stdbuf -o0 awk 'BEGIN{FS=OFS=" => "}{NF--; print}' \
-			| rofi -dmenu -i -p 'Select Video' -no-show-icons -l 10 -scroll-method 0 -format d -async-pre-read 0 &)
+		idx=$(echo "$cache_value" | stdbuf -o0 awk 'BEGIN{FS=OFS=" => "}{NF--; print}' | rofi -dmenu -i -p 'Select Video' -no-show-icons -l 10 -scroll-method 0 -format d -async-pre-read 0; exit $?)
+		rofi_exit_code=$?
+
 		if [[ -n "$idx" ]] && [[ $idx -ge 1 ]]
 		then
 			selection=$(echo "$cache_value" | sed "${idx}q;d")
