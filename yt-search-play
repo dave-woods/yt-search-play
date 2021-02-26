@@ -185,12 +185,12 @@ update_history () {
 	last_item="$(tail -n 1 "$historyfile")"
 	if [[ -n "$search_query" ]]
 	then
-		sed -i '/'"$search_query"'/d' "$historyfile"
+		sed -i '\`'"$search_query"'`d' "$historyfile"
 		echo "$search_query" >> "$historyfile"
 	fi
 	if [[ -n "$url" ]]
 	then
-		sed -i '/'"$selection"'/d' "$historyfile"
+		sed -i '\`'"$selection"'`d' "$historyfile"
 		echo "$selection" >> "$historyfile"
 	fi
 
