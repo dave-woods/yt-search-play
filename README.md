@@ -62,6 +62,7 @@ The following options are available:
 * `-wl` *or* `--watch-later`: Fetch videos from a YouTube account's Watch Later playlist instead of using a search query
 * `-n [num]` *or* `--search-size [num]`: Fetch a maximum of `num` videos
 * `-r` *or* `--reverse`: Reverse the order of the displayed videos
+* `-m` *or* `--mark-watched`: Marks the video as "Watched" on YouTube
 * `--use-max-downloads`: This uses youtube-dl's `--max-downloads` flag instead of `--playlist-end` internally (see configuration below)
 * `-C` *or* `--force-no-cache`: Prevent the program from reading from or writing to the cache
 * `-H` *or* `--force-no-history`: Disable the search history
@@ -79,8 +80,9 @@ The options that can currently be configured are:
 * `data_dir` [string]: The directory where internal data is stored.
 * `force_no_cache` [bool]: When true, prevent the program from reading from or writing to the cache.
 * `force_no_history` [bool]: When true, disable the search history functionality.
-* `subs_mode` [bool]: When true, fetch videos from a YouTube account's subscription feed instead of using a search query.
-* `wl_mode` [bool]: When true, fetch videos from a YouTube account's Watch Later playlist instead of using a search query.
+* `mark_watched` [bool]: When true, mark videos as "Watched" on YouTube (requires cookiefile).
+* `subs_mode` [bool]: When true, fetch videos from a YouTube account's subscription feed instead of using a search query (requires cookiefile).
+* `wl_mode` [bool]: When true, fetch videos from a YouTube account's Watch Later playlist instead of using a search query (requires cookiefile).
 * `reverse` [true|false|'wl']: When true, reverse the order of the fetched videos, or only when using `wl_mode` if set to `'wl'`.
 * `use_max_downloads` [true|false|'wl']: When true, youtube-dl's `--max-downloads` flag will be used internally instead of `--playlist-end`. This ensures that the end of the playlist is fetched rather then just the first N videos reversed. **NB:** This may cause a performance impact, and will not have a noticeable difference except when used with the `reverse` option set to true. When set to `'wl'`, it will only be true when `wl_mode` is true. Note also that this flag will be deprecated in the future and was only needed initially due to how youtube-dl mixes flags (see [issue here](https://github.com/ytdl-org/youtube-dl/issues/25943) and [related PR](https://github.com/ytdl-org/youtube-dl/pull/24487)).
 
@@ -93,6 +95,7 @@ The following is located at `~/.config/yt-search-play/config.json`. It sets the 
   "max_cache_age": "600",
   "data_dir": "~/.config/yt-search-play",
   "reverse_mode": "wl",
-  "use_max_downloads": "wl"
+  "use_max_downloads": "wl",
+	"mark_watched": "true"
 }
 ```

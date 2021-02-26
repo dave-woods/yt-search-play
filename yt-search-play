@@ -162,6 +162,7 @@ load_config () {
 	fi
 
 	historyfile="$script_dir/$data_dir/search-history"
+	#TODO: allow for passed in cookiefile
 	cookiefile="$script_dir/$data_dir/cookies.txt"
 	cachefile="$script_dir/$data_dir/cache.json"
 	
