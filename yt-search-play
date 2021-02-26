@@ -62,10 +62,11 @@ subs_mode=false
 wl_mode=false
 reverse_mode=false
 use_max_downloads=false
+mark_watched=false
 
 ## (Re)write default config
 
-jq -n --arg search_size "$search_size" --arg max_history_size "$max_history_size" --arg max_cache_age "$max_cache_age" --arg data_dir "$data_dir" --arg force_no_cache "$force_no_cache" --arg force_no_history "$force_no_history" --arg subs_mode "$subs_mode" --arg wl_mode "$wl_mode" --arg reverse_mode "$reverse_mode" --arg use_max_downloads "$use_max_downloads" '{search_size: $search_size, max_history_size: $max_history_size, max_cache_age: $max_cache_age, data_dir: $data_dir, force_no_cache: $force_no_cache, force_no_history: $force_no_history, subs_mode: $subs_mode, wl_mode: $wl_mode, reverse_mode: $reverse_mode, use_max_downloads: $use_max_downloads}' > "$default_configfile"
+jq -n --arg search_size "$search_size" --arg max_history_size "$max_history_size" --arg max_cache_age "$max_cache_age" --arg data_dir "$data_dir" --arg force_no_cache "$force_no_cache" --arg force_no_history "$force_no_history" --arg subs_mode "$subs_mode" --arg wl_mode "$wl_mode" --arg reverse_mode "$reverse_mode" --arg use_max_downloads "$use_max_downloads" --arg mark_watched "$mark_watched" '{search_size: $search_size, max_history_size: $max_history_size, max_cache_age: $max_cache_age, data_dir: $data_dir, force_no_cache: $force_no_cache, force_no_history: $force_no_history, subs_mode: $subs_mode, wl_mode: $wl_mode, reverse_mode: $reverse_mode, use_max_downloads: $use_max_downloads, mark_watched: $mark_watched}' > "$default_configfile"
 
 ## Cleanup on exit
 trap cleanup EXIT
@@ -85,6 +86,7 @@ echo -en "The following options are available:
 -wl|--watch-later: Fetch videos from a YouTube account's Watch Later playlist instead of using a search query
 -n [num]|--search-size [num]: Fetch a maximum of num videos
 -r|--reverse: Reverse the order of the displayed videos
+-m|--mark-watched: Mark videos as watched on YouTube
 --use-max-downloads: This uses youtube-dl's --max-downloads flag instead of --playlist-end internally (see configuration below)
 -C|--force-no-cache: Prevent the program from reading from or writing to the cache
 -H|--force-no-history: Disable the search history
@@ -130,6 +132,7 @@ load_config () {
 		wl_mode=$(echo "$config" | jq -r --arg default "$wl_mode" '. | if has("wl_mode") then .wl_mode else $default end')
 		reverse_mode=$(echo "$config" | jq -r --arg default "$reverse_mode" '. | if has("reverse_mode") then .reverse_mode else $default end')
 		use_max_downloads=$(echo "$config" | jq -r --arg default "$use_max_downloads" '. | if has("use_max_downloads") then .use_max_downloads else $default end')
+		mark_watched=$(echo "$config" | jq -r --arg default "$mark_watched" '. | if has("mark_watched") then .mark_watched else $default end')
 	fi
 
 	if ! [[ "$search_size" =~ ^[0-9]+$ ]]
@@ -342,6 +345,10 @@ process_args () {
 						reverse_mode=true
 						shift
 						;;
+					-m|--mark-watched)
+						mark_watched=true
+						shift
+						;;
 					--use-max-downloads)
 						use_max_downloads=true
 						shift
@@ -416,7 +423,7 @@ play_video () {
 	if [[ -n "$url" ]]
 	then
 		pkill mpv
-		mpv --really-quiet "$url" &
+		mpv --really-quiet "$url" "$([[ "$mark_watched" == "true" ]] && [[ -s "$cookiefile" ]] && echo "--ytdl-raw-options=mark-watched=,cookies=$cookiefile")" &
 	fi
 }
 
