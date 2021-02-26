@@ -285,24 +285,19 @@ find_video () {
 		# should stop redirecting ytdl to devnull at this point too
 		youtube-dl -i $reverse --playlist-start $playlist_start $playlist_ender $search_size $include_cookies -j "$search_url" --flat-playlist 2>/dev/null | head -n $search_size | jq --unbuffered -r '. | "\(.title) :: \(.uploader) => https://www.youtube.com/watch?v=\(.url)"' >> "$temp_res"
 
-		idx=$(cat "$temp_res" | stdbuf -o0 awk 'BEGIN{FS=OFS=" => "}{NF--; print}' | rofi -dmenu -i -p 'Select Video' -no-show-icons -l 10 -scroll-method 0 -format d -async-pre-read 0; exit $?)
-		rofi_exit_code=$?
-
-		if [[ -n "$idx" ]] && [[ $idx -ge 1 ]] && [[ -s "$temp_res" ]]
-		then
-			selection=$(sed "${idx}q;d" "$temp_res")
-		fi
+		local found_results="$(<"$temp_res")"
 
 		[[ "$force_no_cache" != "true" ]] && write_to_cache "$search_url"
 	else
-		local cache_value=$(echo "$cache_result" | jq -r '.cache' | head -n $search_size)
-		idx=$(echo "$cache_value" | stdbuf -o0 awk 'BEGIN{FS=OFS=" => "}{NF--; print}' | rofi -dmenu -i -p 'Select Video' -no-show-icons -l 10 -scroll-method 0 -format d -async-pre-read 0; exit $?)
-		rofi_exit_code=$?
+		local found_results=$(echo "$cache_result" | jq -r '.cache' | head -n $search_size)
+	fi
 
-		if [[ -n "$idx" ]] && [[ $idx -ge 1 ]]
-		then
-			selection=$(echo "$cache_value" | sed "${idx}q;d")
-		fi
+	idx=$(echo "$found_results" | stdbuf -o0 awk 'BEGIN{FS=OFS=" => "}{NF--; print}' | rofi -dmenu -i -p 'Select Video' -no-show-icons -l 10 -scroll-method 0 -format d -async-pre-read 0; exit $?)
+	rofi_exit_code=$?
+
+	if [[ $rofi_exit_code -eq 0 ]] && [[ -n "$idx" ]] && [[ $idx -ge 1 ]]
+	then
+		selection=$(echo "$found_results" | sed "${idx}q;d")
 	fi
 
 	url=$(echo "$selection" | awk 'BEGIN{FS=OFS=" => "}{print $NF}')
