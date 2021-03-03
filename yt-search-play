@@ -64,10 +64,6 @@ reverse_mode=false
 use_max_downloads=false
 mark_watched=false
 
-## (Re)write default config
-
-jq -n --arg search_size "$search_size" --arg max_history_size "$max_history_size" --arg max_cache_age "$max_cache_age" --arg data_dir "$data_dir" --arg force_no_cache "$force_no_cache" --arg force_no_history "$force_no_history" --arg subs_mode "$subs_mode" --arg wl_mode "$wl_mode" --arg reverse_mode "$reverse_mode" --arg use_max_downloads "$use_max_downloads" --arg mark_watched "$mark_watched" '{search_size: $search_size, max_history_size: $max_history_size, max_cache_age: $max_cache_age, data_dir: $data_dir, force_no_cache: $force_no_cache, force_no_history: $force_no_history, subs_mode: $subs_mode, wl_mode: $wl_mode, reverse_mode: $reverse_mode, use_max_downloads: $use_max_downloads, mark_watched: $mark_watched}' > "$default_configfile"
-
 ## Custom rofi exit codes
 
 ROFI_OK=0
@@ -83,9 +79,14 @@ cleanup () {
 
 ## Define functions
 
+dump_config () {
+jq -n --arg search_size "$search_size" --arg max_history_size "$max_history_size" --arg max_cache_age "$max_cache_age" --arg data_dir "$data_dir" --arg force_no_cache "$force_no_cache" --arg force_no_history "$force_no_history" --arg subs_mode "$subs_mode" --arg wl_mode "$wl_mode" --arg reverse_mode "$reverse_mode" --arg use_max_downloads "$use_max_downloads" --arg mark_watched "$mark_watched" '{search_size: $search_size, max_history_size: $max_history_size, max_cache_age: $max_cache_age, data_dir: $data_dir, force_no_cache: $force_no_cache, force_no_history: $force_no_history, subs_mode: $subs_mode, wl_mode: $wl_mode, reverse_mode: $reverse_mode, use_max_downloads: $use_max_downloads, mark_watched: $mark_watched}'
+}
+
 print_help () {
 echo -en "The following options are available:
 --generate-config: Generate a default configuration file and exit
+--dump-config: Print the loaded config file's location and the loaded configuration and exit
 --clear-history: Clear the search history and exit
 --clear-cache: Clear the cache and exit
 -s|--subs: Fetch videos from a YouTube account's subscription feed instead of using a search query
@@ -256,7 +257,7 @@ find_video () {
 		then
 			local include_cookies="--cookies $cookiefile"
 		else
-			>&2 echo "A valid cookies.txt file exist in $data_dir."
+			>&2 echo "A valid cookies.txt file must exist in $data_dir."
 			exit 1
 		fi
 	fi
@@ -324,6 +325,11 @@ process_args () {
 		if [[ "$@" =~ --generate-config ]]
 		then
 			echo "Default config generated in: $default_configfile"
+			exit
+		elif [[ "$@" =~ --dump-config ]]
+		then
+			echo "Config file located at: $configfile"
+			dump_config
 			exit
 		elif [[ "$@" =~ --clear-history ]] && [[ "$@" =~ --clear-cache ]]
 		then
@@ -436,6 +442,10 @@ play_video () {
 		mpv --really-quiet "$url" "$([[ "$mark_watched" == "true" ]] && [[ -s "$cookiefile" ]] && echo "--ytdl-raw-options=mark-watched=,cookies=$cookiefile")" &
 	fi
 }
+
+## (Re)write default config
+
+dump_config > "$default_configfile"
 
 ## Main thread
 

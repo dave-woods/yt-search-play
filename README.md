@@ -44,6 +44,8 @@ ln -s ./yt-search-play ~/.local/bin/yt-search-play
 
 Once launched, a rofi window will appear. You can type in your search query at the prompt, and hit the **Enter key** to begin searching YouTube for matching videos. If you have used the program before, your recent searches will be displayed, and you can use the **arrow keys** to navigate. Hit the **Enter key** to select the highlighted history entry. When you have history entries available, typing will filter the entries -- if what you type doesn't match any entries, a search will be performed instead. If your query matches a history entry, but you want to perform a search instead of selecting the entry, hit **Ctrl + Enter** to override selecting the history entry.
 
+If cached results are displayed, pressing **Alt+0** will empty the cache and reload fresh results.
+
 To display just a particular channel's videos, you can use the "@" symbol before the channel's name to find their most recent uploads. For example, typing `@drawfee` will bring up the most recent videos from [Drawfee Show](https://www.youtube.com/c/drawfee). **Note**: this currently only works for channels which have a human-readable channel ID.
 
 #### Accessing subscription feed or Watch Later playlist
@@ -56,6 +58,7 @@ Once the cookie file is valid, launching the program with the `--subs` option wi
 
 The following options are available:
 * `--generate-config`: Generate a default configuration file and exit
+* `--dump-config`: Print the loaded config file's location and the loaded configuration to the terminal and exit
 * `--clear-history`: Clear the search history and exit
 * `--clear-cache`: Clear the cache and exit
 * `-s` *or* `--subs`: Fetch videos from a YouTube account's subscription feed instead of using a search query
