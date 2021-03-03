@@ -294,7 +294,7 @@ find_video () {
 		# https://github.com/ytdl-org/youtube-dl/pull/24487
 		# should stop redirecting ytdl to devnull at this point too
 		youtube-dl -i $reverse --playlist-start $playlist_start $playlist_ender $search_size $include_cookies -j "$search_url" --flat-playlist 2>/dev/null | head -n $search_size | jq --unbuffered -r '. | "\(.title) :: \(.uploader) => https://www.youtube.com/watch?v=\(.url)"' >> "$temp_res"
-		kill $mesgpid
+		{ kill $mesgpid && wait $mesgpid; } &>/dev/null
 
 		local found_results="$(<"$temp_res")"
 
