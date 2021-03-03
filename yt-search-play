@@ -284,19 +284,17 @@ find_video () {
 		# using head -n $search_size is only necessary until implementation of
 		# https://github.com/ytdl-org/youtube-dl/pull/24487
 		# should stop redirecting ytdl to devnull at this point too
-		idx="$(youtube-dl -i $reverse --playlist-start $playlist_start $playlist_ender $search_size $include_cookies -j "$search_url" --flat-playlist 2>/dev/null | head -n $search_size | jq --unbuffered -r '. | "\(.title) :: \(.uploader) => https://www.youtube.com/watch?v=\(.url)"' | tee -a "$temp_res" | stdbuf -o0 awk 'BEGIN{FS=OFS=" => "}{NF--; print}' | rofi -dmenu -i -p 'Select Video' -no-show-icons -l 10 -scroll-method 0 -format d -async-pre-read 0; exit $?)"
-
-		rofi_exit_code=$?
+		youtube-dl -i $reverse --playlist-start $playlist_start $playlist_ender $search_size $include_cookies -j "$search_url" --flat-playlist 2>/dev/null | head -n $search_size | jq --unbuffered -r '. | "\(.title) :: \(.uploader) => https://www.youtube.com/watch?v=\(.url)"' >> "$temp_res"
 
 		local found_results="$(<"$temp_res")"
 
 		[[ "$force_no_cache" != "true" ]] && write_to_cache "$search_url"
 	else
 		local found_results=$(echo "$cache_result" | jq -r '.cache' | head -n $search_size)
-		idx="$(echo "$found_results" | stdbuf -o0 awk 'BEGIN{FS=OFS=" => "}{NF--; print}' | rofi -dmenu -i -p 'Select Video' -no-show-icons -l 10 -scroll-method 0 -format d -async-pre-read 0; exit $?)"
-
-		rofi_exit_code=$?
 	fi
+
+	idx=$(echo "$found_results" | stdbuf -o0 awk 'BEGIN{FS=OFS=" => "}{NF--; print}' | rofi -dmenu -i -p 'Select Video' -no-show-icons -l 10 -scroll-method 0 -format d -async-pre-read 0; exit $?)
+	rofi_exit_code=$?
 
 	if [[ $rofi_exit_code -eq 0 ]] && [[ -n "$idx" ]] && [[ $idx -ge 1 ]]
 	then
