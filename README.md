@@ -72,6 +72,15 @@ The following options are available:
 * `--config [file]`: Use `file` as the configuration file
 * `-h` *or* `--help`: Print help and exit
 
+## Known issues and upcoming features
+
+The reverse mode is currently problematic due to the way that youtube-dl mixes the `--reverse` and `--playlist-end` flags. As a result, when the `--reverse` and `--use-max-downloads` options are both set, the `search_size` parameter is ignored initially (though it is obeyed for cached results). This ensures that the end of the playlist is actually shown first, instead of the Nth video. Hopefully youtube-dl will eventually fix this issue, but in the meantime, it's advisable to only use `--reverse` and `--use-max-downloads` together with small playlists. Using them with `--subs`, for example, is likely to cause an error.
+
+In future:
+* a key command will fetch more results on request
+* there will be an option to display thumbnails
+* pass a theme file for rofi
+
 ## Configuration
 
 The default configuration file is `.default.config.json` which is located in the same directory as the script. This file should not be edited, as it will be overwritten when the script executes. Users can override all or part of this default by providing a file called `config.json` in either the same directory as the script or in `~/.config/yt-search-play/`, or by passing the file at runtime.
