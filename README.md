@@ -112,6 +112,6 @@ The following is located at `~/.config/yt-search-play/config.json`. It sets the 
   "data_dir": "~/.config/yt-search-play",
   "reverse_mode": "wl",
   "use_max_downloads": "wl",
-	"mark_watched": "true"
+  "mark_watched": "true"
 }
 ```
