@@ -74,7 +74,6 @@ ROFI_REFRESH=19
 trap cleanup EXIT
 cleanup () {
 	echo "Exiting..."
-	[[ -f "$temp_res" ]] &&	rm -f "$temp_res"
 }
 
 ## Define functions
@@ -190,7 +189,6 @@ clear_cache () {
 }
 
 update_history () {
-	last_item="$(tail -n 1 "$historyfile")"
 	if [[ -n "$search_query" ]]
 	then
 		sed -i '\`'"$search_query"'`d' "$historyfile"
@@ -198,14 +196,11 @@ update_history () {
 	fi
 	if [[ -n "$url" ]]
 	then
-		sed -i '\`'"$selection"'`d' "$historyfile"
-		echo "$selection" >> "$historyfile"
+		sed -i '\`'"$history_entry"'`d' "$historyfile"
+		echo "$history_entry" >> "$historyfile"
 	fi
 
-	if [[ $history_size -gt $max_history_size ]]
-	then
-		echo "$(tail -n $max_history_size "$historyfile")" > "$historyfile"
-	fi
+	echo "$(tail -n $max_history_size "$historyfile")" > "$historyfile"
 }
 
 purge_expired_cache () {
@@ -218,11 +213,11 @@ write_to_cache () {
     echo "[]" > "$cachefile"
   fi
 
-  local cache=$(<"$temp_res")
+  local cache=$(echo "$2" | jq --slurp '.')
   
-	if [[ -n "$cache" ]]
+	if [[ -n "$cache" ]] && [[ "$cache" != "[]" ]]
 	then
-		jq --arg sel "$1" 'del(.[] | select(.entry == $sel))' "$cachefile" | jq --arg sel "$1" --arg time "$(date +%s)" --arg cc "$cache" --arg size "$(grep -c "^" "$temp_res")" '. += [{entry: $sel, time: $time, cache: $cc, size: $size}]' > "$cachefile.tmp" && mv "$cachefile.tmp" "$cachefile"
+		jq --arg sel "$1" 'del(.[] | select(.entry == $sel))' "$cachefile" | jq --arg sel "$1" --arg time "$(date +%s)" --argjson cc "$cache" '. += [{entry: $sel, time: $time, cache: $cc, size: ($cc|length)}]' > "$cachefile.tmp" && mv "$cachefile.tmp" "$cachefile"
 	fi
 }
 
@@ -239,14 +234,15 @@ read_from_cache () {
 				partial_cache="true"
 				playlist_start=$((cache_size+1))
 			fi
-			cache_result="$entry_found"
+			cache_value=$(echo "$entry_found" | jq -r '.cache[]')
 		fi
 	fi 
 }
 
 find_video () {
 	local search_url="$1"
-	cache_result=
+	cache_value=
+	partial_cache=
 	selection=
 	url=
 
@@ -280,49 +276,42 @@ find_video () {
 	[[ "$refresh_cache" != "true" ]] && [[ "$force_no_cache" != "true" ]] && read_from_cache "$search_url"
 	
 	refresh_cache=false
-	if [[ -z "$cache_result" ]] || [[ "$partial_cache" == "true" ]]
+	if [[ -z "$cache_value" ]] || [[ "$partial_cache" == "true" ]]
 	then
-		temp_res=$(mktemp /tmp/ysp_results.XXXXXXXX)
-
-		if [[ "$partial_cache" == "true" ]]
-		then
-			local cache_value=$(echo "$cache_result" | jq -r '.cache')
-			echo -e "$cache_value" > "$temp_res"
-		fi
-		
 		rofi -e "Loading videos..." &
 		mesgpid=$!
 		# reverse and max-downloads will get all videos, used due to below
 		# https://github.com/ytdl-org/youtube-dl/pull/24487
-		youtube-dl -i $reverse --playlist-start $playlist_start $playlist_ender $playlist_end $include_cookies -j "$search_url" --flat-playlist | jq --unbuffered -r '. | "\(.title) :: \(.uploader) => https://www.youtube.com/watch?v=\(.url)"' >> "$temp_res"
+		local search="$(youtube-dl -i $reverse --playlist-start $playlist_start $playlist_ender $playlist_end $include_cookies -j "$search_url" --flat-playlist | jq -r --unbuffered '. | {title: .title, uploader: .uploader, id: .url, url: ("http://www.youtube.com/watch?v=" + .url)}')"
 		{ kill $mesgpid && wait $mesgpid; } &>/dev/null
 
-		local found_results="$(<"$temp_res")"
+		local found_results="$(jq --slurp '.[]' <(echo "$cache_value") <(echo "$search"))"
 
-		[[ "$force_no_cache" != "true" ]] && write_to_cache "$search_url"
+		[[ "$force_no_cache" != "true" ]] && write_to_cache "$search_url" "$found_results"
 	else
-		local found_results=$(echo "$cache_result" | jq -r '.cache')
+		local found_results="$cache_value"
 	fi
 
-	idx=$(echo "$found_results" | head -n $playlist_end | stdbuf -o0 awk 'BEGIN{FS=OFS=" => "}{NF--; print}' | rofi -dmenu -i -p 'Select Video' -no-show-icons -l 10 -scroll-method 0 -format d -async-pre-read 0 -selected-row $((playlist_end-search_size)); exit $?)
+	idx=$(echo "$found_results" | jq -r '. | "\(.title) :: \(.uploader)"' | head -n $playlist_end | rofi -dmenu -i -p 'Select Video' -no-show-icons -l 10 -scroll-method 0 -format i -async-pre-read 0 -selected-row $((playlist_end-search_size)); exit $?)
 	rofi_exit_code=$?
 
-	if [[ $rofi_exit_code -eq $ROFI_OK ]] && [[ -n "$idx" ]] && [[ $idx -ge 1 ]]
+	if [[ $rofi_exit_code -eq $ROFI_OK ]] && [[ -n "$idx" ]] && [[ $idx -ge 0 ]]
 	then
-		selection=$(echo "$found_results" | sed "${idx}q;d")
+		selection=$(echo "$found_results" | jq --slurp -r --arg idx $idx '.[$idx|tonumber]')
 	elif [[ $rofi_exit_code -eq $ROFI_MORE ]]
 	then
-		rm -f "$temp_res"
 		playlist_end=$((playlist_end+search_size))
-		# [[ $playlist_end -gt 100 ]] && playlist_end=100 && search_size=10
 		find_video "$1"
 	elif [[ $rofi_exit_code -eq $ROFI_REFRESH ]]
 	then
+		playlist_start=1
+		playlist_end=$search_size
 		refresh_cache=true
 		find_video "$1"
 	fi
 
-	url=$(echo "$selection" | awk 'BEGIN{FS=OFS=" => "}{print $NF}')
+	url=$(echo "$selection" | jq -r '.url')
+	history_entry="$(echo "$selection" | jq -r '"\(.title) :: \(.uploader) :: \(.url)"')"
 }
 
 process_args () {
