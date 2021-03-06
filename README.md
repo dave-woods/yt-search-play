@@ -9,7 +9,7 @@ The program can also fetch videos from a specified YouTube account's subscriptio
 An older version of the script retrieved video info one video at a time, and was a bit slow, so relied on caching the results of searches in order to speed up usage. As a result, by default, searches are cached for 1 minute, but this can be disabled by using the `--force-no-cache` flag. The cache time can also be extended if desired, and you can set new defaults with a config file.
 ## Dependencies
 
-Listed versions below have been tested. Newer releases should work fine, but older versions may have problems. Note that the versions located in the standard package managers may be outdated -- see the relevant links above for the most up to date information on installing.
+Listed versions below have been tested. Newer releases should work fine, but older versions may have problems. Note that the versions located in the standard package managers may be outdated - see the relevant links above for the most up to date information on installing.
 
 * rofi 1.6.1
 * youtube-dl 2021.01.16
@@ -44,7 +44,7 @@ ln -s ./yt-search-play ~/.local/bin/yt-search-play
 
 Once launched, a rofi window will appear. You can type in your search query at the prompt, and hit the **Enter** key to begin searching YouTube for matching videos. If you have used the program before, your recent searches will be displayed, and you can use the **Up** and **Down** arrow keys to navigate, or the **Left** and **Right** arrow keys to move back and forth between pages.
 
-Hit the **Enter key** to select the highlighted history entry. When you have history entries available, typing will filter the entries -- if what you type doesn't match any entries, a search will be performed instead. If your query matches a history entry, but you want to perform a search instead of selecting the entry, hit **Ctrl + Enter** to override selecting the history entry. If the program is launched in Subscriptions or Watch Later mode, searching is disabled, and typing at the prompt will just filter videos.
+Hit the **Enter key** to select the highlighted history entry. When you have history entries available, typing will filter the entries - if what you type doesn't match any entries, a search will be performed instead. If your query matches a history entry, but you want to perform a search instead of selecting the entry, hit **Ctrl + Enter** to override selecting the history entry. If the program is launched in Subscriptions or Watch Later mode, searching is disabled, and typing at the prompt will just filter videos.
 
 You can press **Alt+1** to add N more videos to the results screen, where N is the search size. Note that due to the way YouTube allows videos to be found, playlists which contain over 100 videos (including the Subscriptions feed) may be problematic, either being slow, or returning no results. This is an upstream issue which youtube-dl may or may not be able to solve in the future.
 
@@ -56,7 +56,7 @@ To display just a particular channel's videos, you can use the "@" symbol before
 
 In order for the program to be able to access a user's YouTube subscription feed or Watch Later playlist, a Netscape-format `cookies.txt` file must be placed in the data directory (default `.data`) which contains the login credentials. The specific cookies needed can be obtained by logging into YouTube the normal way and then using a browser extension to export the file, such as [EditThisCookie](https://chrome.google.com/webstore/detail/editthiscookie/fngmhnnpilhplaeedifhccceomclgfbg) or [Get cookies.txt](https://chrome.google.com/webstore/detail/get-cookiestxt/bgaddhkoddajcdgocldbbfleckgcbcid). Note that the cookie file *must* be in **Mozilla/Netscape format** and the first line of the cookies file must be either `# HTTP Cookie File` or `# Netscape HTTP Cookie File`. See [here](https://github.com/ytdl-org/youtube-dl/#how-do-i-pass-cookies-to-youtube-dl) for more.
 
-Once the cookie file is valid, launching the program with the `--subs` option will bring up the most recent videos from the user's subscription feed. Using the `--wl` option will grab videos from the top of the user's Watch Later playlist.
+Once the cookie file is valid, launching the program with the `--subs` option will bring up the most recent videos from the user's subscription feed. Using the `--watch-later` option will grab videos from the top of the user's Watch Later playlist.
 
 #### Options
 
