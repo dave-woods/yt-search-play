@@ -234,7 +234,7 @@ read_from_cache () {
 		if [[ -n "$entry_found" ]] 
 		then
 			cache_size=$(echo "$entry_found" | jq -r '.size')
-			if [[ $cache_size -lt $search_size ]]
+			if [[ $cache_size -lt $playlist_end ]]
 			then
 				partial_cache="true"
 				playlist_start=$((cache_size+1))
@@ -279,6 +279,7 @@ find_video () {
 
 	[[ "$refresh_cache" != "true" ]] && [[ "$force_no_cache" != "true" ]] && read_from_cache "$search_url"
 	
+	refresh_cache=false
 	if [[ -z "$cache_result" ]] || [[ "$partial_cache" == "true" ]]
 	then
 		temp_res=$(mktemp /tmp/ysp_results.XXXXXXXX)
@@ -293,22 +294,28 @@ find_video () {
 		mesgpid=$!
 		# reverse and max-downloads will get all videos, used due to below
 		# https://github.com/ytdl-org/youtube-dl/pull/24487
-		youtube-dl -i $reverse --playlist-start $playlist_start $playlist_ender $search_size $include_cookies -j "$search_url" --flat-playlist | jq --unbuffered -r '. | "\(.title) :: \(.uploader) => https://www.youtube.com/watch?v=\(.url)"' >> "$temp_res"
+		youtube-dl -i $reverse --playlist-start $playlist_start $playlist_ender $playlist_end $include_cookies -j "$search_url" --flat-playlist | jq --unbuffered -r '. | "\(.title) :: \(.uploader) => https://www.youtube.com/watch?v=\(.url)"' >> "$temp_res"
 		{ kill $mesgpid && wait $mesgpid; } &>/dev/null
 
 		local found_results="$(<"$temp_res")"
 
 		[[ "$force_no_cache" != "true" ]] && write_to_cache "$search_url"
 	else
-		local found_results=$(echo "$cache_result" | jq -r '.cache' | head -n $search_size)
+		local found_results=$(echo "$cache_result" | jq -r '.cache')
 	fi
 
-	idx=$(echo "$found_results" | stdbuf -o0 awk 'BEGIN{FS=OFS=" => "}{NF--; print}' | rofi -dmenu -i -p 'Select Video' -no-show-icons -l 10 -scroll-method 0 -format d -async-pre-read 0; exit $?)
+	idx=$(echo "$found_results" | head -n $playlist_end | stdbuf -o0 awk 'BEGIN{FS=OFS=" => "}{NF--; print}' | rofi -dmenu -i -p 'Select Video' -no-show-icons -l 10 -scroll-method 0 -format d -async-pre-read 0 -selected-row $((playlist_end-search_size)); exit $?)
 	rofi_exit_code=$?
 
 	if [[ $rofi_exit_code -eq $ROFI_OK ]] && [[ -n "$idx" ]] && [[ $idx -ge 1 ]]
 	then
 		selection=$(echo "$found_results" | sed "${idx}q;d")
+	elif [[ $rofi_exit_code -eq $ROFI_MORE ]]
+	then
+		rm -f "$temp_res"
+		playlist_end=$((playlist_end+search_size))
+		# [[ $playlist_end -gt 100 ]] && playlist_end=100 && search_size=10
+		find_video "$1"
 	elif [[ $rofi_exit_code -eq $ROFI_REFRESH ]]
 	then
 		refresh_cache=true
@@ -360,6 +367,11 @@ process_args () {
 						reverse_mode=true
 						shift
 						;;
+					--max-cache-age)
+						max_cache_age="$2"
+						shift
+						shift
+						;;
 					-m|--mark-watched)
 						mark_watched=true
 						shift
@@ -402,6 +414,7 @@ process_args () {
 }
 
 do_search () {
+	playlist_end=$search_size
 	if [[ "$subs_mode" == "true" ]]
 	then
 		find_video "https://www.youtube.com/feed/subscriptions"
@@ -427,7 +440,7 @@ do_search () {
 		elif [[ -n "$search_query" ]]
 		then
 			sanitised_query=${search_query// /+}
-			find_video "ytsearch$search_size:$sanitised_query"
+			find_video "ytsearchall:$sanitised_query"
 		else
 			exit
 		fi

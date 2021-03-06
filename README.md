@@ -42,7 +42,11 @@ ln -s ./yt-search-play ~/.local/bin/yt-search-play
 ```
 ### Using the interface
 
-Once launched, a rofi window will appear. You can type in your search query at the prompt, and hit the **Enter key** to begin searching YouTube for matching videos. If you have used the program before, your recent searches will be displayed, and you can use the **arrow keys** to navigate. Hit the **Enter key** to select the highlighted history entry. When you have history entries available, typing will filter the entries -- if what you type doesn't match any entries, a search will be performed instead. If your query matches a history entry, but you want to perform a search instead of selecting the entry, hit **Ctrl + Enter** to override selecting the history entry.
+Once launched, a rofi window will appear. You can type in your search query at the prompt, and hit the **Enter** key to begin searching YouTube for matching videos. If you have used the program before, your recent searches will be displayed, and you can use the **Up** and **Down** arrow keys to navigate, or the **Left** and **Right** arrow keys to move back and forth between pages.
+
+Hit the **Enter key** to select the highlighted history entry. When you have history entries available, typing will filter the entries -- if what you type doesn't match any entries, a search will be performed instead. If your query matches a history entry, but you want to perform a search instead of selecting the entry, hit **Ctrl + Enter** to override selecting the history entry. If the program is launched in Subscriptions or Watch Later mode, searching is disabled, and typing at the prompt will just filter videos.
+
+You can press **Alt+1** to add N more videos to the results screen, where N is the search size. Note that due to the way YouTube allows videos to be found, playlists which contain over 100 videos (including the Subscriptions feed) may be problematic, either being slow, or returning no results. This is an upstream issue which youtube-dl may or may not be able to solve in the future.
 
 If cached results are displayed, pressing **Alt+0** will empty the cache and reload fresh results.
 
@@ -69,6 +73,7 @@ The following options are available:
 * `--use-max-downloads`: This uses youtube-dl's `--max-downloads` flag instead of `--playlist-end` internally (see configuration below)
 * `-C` *or* `--force-no-cache`: Prevent the program from reading from or writing to the cache
 * `-H` *or* `--force-no-history`: Disable the search history
+* `--max-cache-age [num]`: Set the maximum number of seconds before cache entries expire
 * `--config [file]`: Use `file` as the configuration file
 * `-h` *or* `--help`: Print help and exit
 
@@ -77,7 +82,6 @@ The following options are available:
 The reverse mode is currently problematic due to the way that youtube-dl mixes the `--reverse` and `--playlist-end` flags. As a result, when the `--reverse` and `--use-max-downloads` options are both set, the `search_size` parameter is ignored initially (though it is obeyed for cached results). This ensures that the end of the playlist is actually shown first, instead of the Nth video. Hopefully youtube-dl will eventually fix this issue, but in the meantime, it's advisable to only use `--reverse` and `--use-max-downloads` together with small playlists. Using them with `--subs`, for example, is likely to cause an error.
 
 In future:
-* a key command will fetch more results on request
 * there will be an option to display thumbnails
 * pass a theme file for rofi
 
