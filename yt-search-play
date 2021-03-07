@@ -72,10 +72,10 @@ ROFI_MORE=10
 ROFI_REFRESH=19
 
 ## Cleanup on exit
-trap cleanup EXIT
-cleanup () {
-	echo "Exiting..."
-}
+# trap cleanup EXIT
+# cleanup () {
+	# echo "Exiting..."
+# }
 
 ## Define functions
 
