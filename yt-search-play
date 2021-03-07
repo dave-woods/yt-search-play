@@ -63,6 +63,7 @@ wl_mode=false
 reverse_mode=false
 use_max_downloads=false
 mark_watched=false
+use_thumbnails=false
 
 ## Custom rofi exit codes
 
@@ -79,7 +80,7 @@ cleanup () {
 ## Define functions
 
 dump_config () {
-jq -n --arg search_size "$search_size" --arg max_history_size "$max_history_size" --arg max_cache_age "$max_cache_age" --arg data_dir "$data_dir" --arg force_no_cache "$force_no_cache" --arg force_no_history "$force_no_history" --arg subs_mode "$subs_mode" --arg wl_mode "$wl_mode" --arg reverse_mode "$reverse_mode" --arg use_max_downloads "$use_max_downloads" --arg mark_watched "$mark_watched" '{search_size: $search_size, max_history_size: $max_history_size, max_cache_age: $max_cache_age, data_dir: $data_dir, force_no_cache: $force_no_cache, force_no_history: $force_no_history, subs_mode: $subs_mode, wl_mode: $wl_mode, reverse_mode: $reverse_mode, use_max_downloads: $use_max_downloads, mark_watched: $mark_watched}'
+jq -n --arg search_size "$search_size" --arg max_history_size "$max_history_size" --arg max_cache_age "$max_cache_age" --arg data_dir "$data_dir" --arg force_no_cache "$force_no_cache" --arg force_no_history "$force_no_history" --arg subs_mode "$subs_mode" --arg wl_mode "$wl_mode" --arg reverse_mode "$reverse_mode" --arg use_max_downloads "$use_max_downloads" --arg mark_watched "$mark_watched" --arg use_thumbnails "$use_thumbnails" '{search_size: $search_size, max_history_size: $max_history_size, max_cache_age: $max_cache_age, data_dir: $data_dir, force_no_cache: $force_no_cache, force_no_history: $force_no_history, subs_mode: $subs_mode, wl_mode: $wl_mode, reverse_mode: $reverse_mode, use_max_downloads: $use_max_downloads, mark_watched: $mark_watched, use_thumbnails: $use_thumbnails}'
 }
 
 print_help () {
@@ -91,8 +92,10 @@ echo -en "The following options are available:
 -s|--subs: Fetch videos from a YouTube account's subscription feed instead of using a search query
 -wl|--watch-later: Fetch videos from a YouTube account's Watch Later playlist instead of using a search query
 -n [num]|--search-size [num]: Fetch a maximum of num videos
+--max-cache-age [num]: Set the number of seconds before a cached search expires
 -r|--reverse: Reverse the order of the displayed videos
 -m|--mark-watched: Mark videos as watched on YouTube
+-t|--thumbnails: Download and display video thumbnails
 --use-max-downloads: This uses youtube-dl's --max-downloads flag instead of --playlist-end internally
 -C|--force-no-cache: Prevent the program from reading from or writing to the cache
 -H|--force-no-history: Disable the search history
@@ -139,6 +142,7 @@ load_config () {
 		reverse_mode=$(echo "$config" | jq -r --arg default "$reverse_mode" '. | if has("reverse_mode") then .reverse_mode else $default end')
 		use_max_downloads=$(echo "$config" | jq -r --arg default "$use_max_downloads" '. | if has("use_max_downloads") then .use_max_downloads else $default end')
 		mark_watched=$(echo "$config" | jq -r --arg default "$mark_watched" '. | if has("mark_watched") then .mark_watched else $default end')
+		use_thumbnails=$(echo "$config" | jq -r --arg default "$use_thumbnails" '. | if has("use_thumbnails") then .use_thumbnails else $default end')
 	fi
 
 	if ! [[ "$search_size" =~ ^[0-9]+$ ]]
@@ -204,7 +208,12 @@ update_history () {
 }
 
 purge_expired_cache () {
-	jq --arg time "$(($(date +%s)-$max_cache_age))" 'del(.[] | select(.time < $time))' "$cachefile" > "$cachefile.tmp" && mv "$cachefile.tmp" "$cachefile"
+	local expiry_window="$(($(date +%s)-$max_cache_age))"
+	for dead_thumb in $(jq -r --arg time "$expiry_window" --arg dd "$script_dir/$data_dir" '.[] | select(.time < $time) | "\($dd)/thumbs/\(.cache[].id).jpg"' "$cachefile")
+	do
+		rm -f "$dead_thumb"
+	done
+	jq --arg time "$expiry_window" 'del(.[] | select(.time < $time))' "$cachefile" > "$cachefile.tmp" && mv "$cachefile.tmp" "$cachefile"
 }
 
 write_to_cache () {
@@ -284,6 +293,11 @@ find_video () {
 		# https://github.com/ytdl-org/youtube-dl/pull/24487
 		local search="$(youtube-dl -i $reverse --playlist-start $playlist_start $playlist_ender $playlist_end $include_cookies -j "$search_url" --flat-playlist | jq -r --unbuffered '. | {title: .title, uploader: .uploader, id: .url, url: ("http://www.youtube.com/watch?v=" + .url)}')"
 		{ kill $mesgpid && wait $mesgpid; } &>/dev/null
+		
+		if [[ "$use_thumbnails" == "true" ]]
+		then
+			get_thumbnails
+		fi
 
 		local found_results="$(jq --slurp '.[]' <(echo "$cache_value") <(echo "$search"))"
 
@@ -292,7 +306,12 @@ find_video () {
 		local found_results="$cache_value"
 	fi
 
-	idx=$(echo "$found_results" | jq -r '. | "\(.title) :: \(.uploader)"' | head -n $playlist_end | rofi -dmenu -i -p 'Select Video' -no-show-icons -l 10 -scroll-method 0 -format i -async-pre-read 0 -selected-row $((playlist_end-search_size)); exit $?)
+	if [[ "$use_thumbnails" == "true" ]]
+	then
+		idx=$(echo -e "$(echo "$found_results" | jq -r --arg dd "$script_dir/$data_dir" '. | "\(.title) :: \(.uploader)\\0icon\\x1f\($dd)/thumbs/\(.id).jpg"' | head -n $playlist_end)" | rofi -dmenu -i -p 'Select Video' -show-icons -l 10 -scroll-method 0 -format i -async-pre-read 0 -selected-row $((playlist_end-search_size)); exit $?)
+	else
+		idx=$(echo "$found_results" | jq -r '. | "\(.title) :: \(.uploader)"' | head -n $playlist_end | rofi -dmenu -i -p 'Select Video' -no-show-icons -l 10 -scroll-method 0 -format i -async-pre-read 0 -selected-row $((playlist_end-search_size)); exit $?)
+	fi
 	rofi_exit_code=$?
 
 	if [[ $rofi_exit_code -eq $ROFI_OK ]] && [[ -n "$idx" ]] && [[ $idx -ge 0 ]]
@@ -312,6 +331,26 @@ find_video () {
 
 	url=$(echo "$selection" | jq -r '.url')
 	history_entry="$(echo "$selection" | jq -r '"\(.title) :: \(.uploader) :: \(.url)"')"
+}
+
+get_thumbnails () {	
+  rofi -e "Fetching thumbnails..." &
+  mesgpid=$!
+  mkdir -p "$data_dir/thumbs"
+  local thumb_idx=0
+  for id in $(echo "$search" | jq -r '.id')
+  do
+  	if [[ ! -f "$script_dir/$data_dir/thumbs/$id.jpg" ]]
+  	then
+  		wget -q --output-document="$script_dir/$data_dir/thumbs/$id.jpg" "https://i.ytimg.com/vi/$id/hqdefault.jpg" &
+  		thumb_pids[$((thumb_idx++))]=$!
+  	fi
+  done
+  for thumb_pid in ${thumb_pids[*]}
+  do
+  	wait $thumb_pid
+  done
+  { kill $mesgpid && wait $mesgpid; } &>/dev/null
 }
 
 process_args () {
@@ -363,6 +402,10 @@ process_args () {
 						;;
 					-m|--mark-watched)
 						mark_watched=true
+						shift
+						;;
+					-t|--thumbnails)
+						use_thumbnails=true
 						shift
 						;;
 					--use-max-downloads)
