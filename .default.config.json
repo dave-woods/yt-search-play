@@ -9,5 +9,6 @@
   "wl_mode": "false",
   "reverse_mode": "false",
   "use_max_downloads": "false",
-  "mark_watched": "false"
+  "mark_watched": "false",
+  "use_thumbnails": "false"
 }
