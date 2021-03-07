@@ -6,7 +6,7 @@ When the script is run, a rofi window will appear. The user can type to search, 
 
 The program can also fetch videos from a specified YouTube account's subscription feed or Watch Later playlist instead.
 
-An older version of the script retrieved video info one video at a time, and was a bit slow, so relied on caching the results of searches in order to speed up usage. As a result, by default, searches are cached for 1 minute, but this can be disabled by using the `--force-no-cache` flag. The cache time can also be extended if desired, and you can set new defaults with a config file.
+By default, searches are cached for 1 minute, but this can be disabled by using the `--force-no-cache` flag. The cache time can also be extended if desired, and you can set new defaults with a config file. If using the `--thumbnails` option, thumbnail files will only be stored until the cache expires.
 ## Dependencies
 
 Listed versions below have been tested. Newer releases should work fine, but older versions may have problems. Note that the versions located in the standard package managers may be outdated - see the relevant links above for the most up to date information on installing.
@@ -70,6 +70,7 @@ The following options are available:
 * `-n [num]` *or* `--search-size [num]`: Fetch a maximum of `num` videos
 * `-r` *or* `--reverse`: Reverse the order of the displayed videos
 * `-m` *or* `--mark-watched`: Marks the video as "Watched" on YouTube
+* `-t` *or* `--thumbnails`: Fetch and display video thumbnails
 * `--use-max-downloads`: This uses youtube-dl's `--max-downloads` flag instead of `--playlist-end` internally (see configuration below)
 * `-C` *or* `--force-no-cache`: Prevent the program from reading from or writing to the cache
 * `-H` *or* `--force-no-history`: Disable the search history
@@ -82,7 +83,6 @@ The following options are available:
 The reverse mode is currently problematic due to the way that youtube-dl mixes the `--reverse` and `--playlist-end` flags. As a result, when the `--reverse` and `--use-max-downloads` options are both set, the `search_size` parameter is ignored initially (though it is obeyed for cached results). This ensures that the end of the playlist is actually shown first, instead of the Nth video. Hopefully youtube-dl will eventually fix this issue, but in the meantime, it's advisable to only use `--reverse` and `--use-max-downloads` together with small playlists. Using them with `--subs`, for example, is likely to cause an error.
 
 In future:
-* there will be an option to display thumbnails
 * pass a theme file for rofi
 
 ## Configuration
@@ -97,6 +97,7 @@ The options that can currently be configured are:
 * `force_no_cache` [bool]: When true, prevent the program from reading from or writing to the cache.
 * `force_no_history` [bool]: When true, disable the search history functionality.
 * `mark_watched` [bool]: When true, mark videos as "Watched" on YouTube (requires cookiefile).
+* `use_thumbnails` [bool]: When true, video thumbnails are fetched and stored in the data directory, and then displayed next to the video title.
 * `subs_mode` [bool]: When true, fetch videos from a YouTube account's subscription feed instead of using a search query (requires cookiefile).
 * `wl_mode` [bool]: When true, fetch videos from a YouTube account's Watch Later playlist instead of using a search query (requires cookiefile).
 * `reverse` [true|false|'wl']: When true, reverse the order of the fetched videos, or only when using `wl_mode` if set to `'wl'`.
@@ -112,6 +113,7 @@ The following is located at `~/.config/yt-search-play/config.json`. It sets the 
   "data_dir": "~/.config/yt-search-play",
   "reverse_mode": "wl",
   "use_max_downloads": "wl",
-  "mark_watched": "true"
+  "mark_watched": "true",
+  "use_thumbnails": "true"
 }
 ```
