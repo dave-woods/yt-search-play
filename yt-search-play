@@ -335,12 +335,14 @@ find_video () {
 	elif [[ $rofi_exit_code -eq $ROFI_MORE ]]
 	then
 		playlist_end=$((playlist_end+search_size))
+		FINDING=0
 		find_video "$1"
 	elif [[ $rofi_exit_code -eq $ROFI_REFRESH ]]
 	then
 		playlist_start=1
 		playlist_end=$search_size
 		refresh_cache=true
+		FINDING=0
 		find_video "$1"
 	fi
 
