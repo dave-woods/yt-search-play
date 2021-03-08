@@ -71,7 +71,8 @@ The following options are available:
 * `-r` *or* `--reverse`: Reverse the order of the displayed videos
 * `-m` *or* `--mark-watched`: Marks the video as "Watched" on YouTube
 * `-t` *or* `--thumbnails`: Fetch and display video thumbnails
-* `--use-max-downloads`: This uses youtube-dl's `--max-downloads` flag instead of `--playlist-end` internally (see configuration below)
+* `--thumbnail-size [num]`: Sets the thumbnail size relative to the text size, if thumbnails are displayed
+* `--use-max-downloads`: This uses youtube-dl's `--max-downloads` flag instead of `--playlist-end` internally (see known issues below)
 * `-C` *or* `--force-no-cache`: Prevent the program from reading from or writing to the cache
 * `-H` *or* `--force-no-history`: Disable the search history
 * `--max-cache-age [num]`: Set the maximum number of seconds before cache entries expire
@@ -82,37 +83,39 @@ The following options are available:
 
 Since this script relies on youtube-dl rather than YouTube's API, it is subject to breaking if YouTube change the way they render webpages. If your results look something like "null :: null", this is probably why. Unfortunately, there's not much to be done in this scenario except wait for an upstream fix, or trying one of the [forks](https://github.com/yt-dlp/yt-dlp) of youtube-dl.
 
-The reverse mode is currently problematic due to the way that youtube-dl mixes the `--reverse` and `--playlist-end` flags. As a result, when the `--reverse` and `--use-max-downloads` options are both set, the `search_size` parameter is ignored initially (though it is obeyed for cached results). This ensures that the end of the playlist is actually shown first, instead of the Nth video. Hopefully youtube-dl will eventually fix this issue, but in the meantime, it's advisable to only use `--reverse` and `--use-max-downloads` together with small playlists. Using them with `--subs`, for example, is likely to cause an error.
+The reverse mode is currently problematic due to the way that youtube-dl mixes the `--reverse` and `--playlist-end` flags (see [issue here](https://github.com/ytdl-org/youtube-dl/issues/25943) and [related PR](https://github.com/ytdl-org/youtube-dl/pull/24487)). The `--use-max-downloads` option is needed in order to get videos from the end of a playlist, rather than just the first N videos in reverse order. However, as a result, when the `--reverse` and `--use-max-downloads` options are both set, the `search_size` parameter is ignored initially, and the full playlist's info is retrieved and cached, though the correct number of videos are displayed. Note that the `--use-max-downloads` will be deprecated in future, as it is purely a workaround based in an older version of the program, and it will be replaced. Hopefully youtube-dl will eventually fix the underlying issue, but in the meantime, it's advisable to only use `--reverse` and `--use-max-downloads` together with small playlists. Using them with `--subs`, for example, is likely to cause an error.
 
-There is an underlying issue with YouTube/youtube-dl that can prevent playlists with over 100 videos in them from fetching any past the 100th. This notably affects both the subscription feed and the watch later playlist.
+There is an underlying issue with YouTube/youtube-dl that can prevent playlists with over 100 videos in them from fetching any past the 100th (see [issue here](https://github.com/ytdl-org/youtube-dl/issues/28362)). This notably affects both the subscription feed and the watch later playlist.
 
 In future:
 * Pass a theme file for rofi
 * Queue multiple videos
 * Get videos from Liked videos playlist
 * *Experimentally* add/remove a video from Liked videos or Watch Later playlists
+* Deprecate `--use-max-downloads` in favour of `--get-all`
 
 ## Configuration
 
 The default configuration file is `.default.config.json` which is located in the same directory as the script. This file should not be edited, as it will be overwritten when the script executes. Users can override all or part of this default by providing a file called `config.json` in either the same directory as the script or in `~/.config/yt-search-play/`, or by passing the file at runtime.
 
 The options that can currently be configured are:
-* `search_size` [int]: The (maximum) number of videos fetched when searching.
-* `max_history_size` [int]: The maximum number of history entries displayed.
-* `max_cache_age` [int]: How long in seconds before a cache entry expires.
-* `data_dir` [string]: The directory where internal data is stored.
-* `force_no_cache` [bool]: When true, prevent the program from reading from or writing to the cache.
-* `force_no_history` [bool]: When true, disable the search history functionality.
-* `mark_watched` [bool]: When true, mark videos as "Watched" on YouTube (requires cookiefile).
-* `use_thumbnails` [bool]: When true, video thumbnails are fetched and stored in the data directory, and then displayed next to the video title.
-* `subs_mode` [bool]: When true, fetch videos from a YouTube account's subscription feed instead of using a search query (requires cookiefile).
-* `wl_mode` [bool]: When true, fetch videos from a YouTube account's Watch Later playlist instead of using a search query (requires cookiefile).
-* `reverse` [true|false|'wl']: When true, reverse the order of the fetched videos, or only when using `wl_mode` if set to `'wl'`.
-* `use_max_downloads` [true|false|'wl']: When true, youtube-dl's `--max-downloads` flag will be used internally instead of `--playlist-end`. This ensures that the end of the playlist is fetched rather then just the first N videos reversed. **NB:** This may cause a performance impact, and will not have a noticeable difference except when used with the `reverse` option set to true. When set to `'wl'`, it will only be true when `wl_mode` is true. Note also that this flag will be deprecated in the future and was only needed initially due to how youtube-dl mixes flags (see [issue here](https://github.com/ytdl-org/youtube-dl/issues/25943) and [related PR](https://github.com/ytdl-org/youtube-dl/pull/24487)).
+* `search_size` [int]: The (maximum) number of videos fetched when searching. *Default: 30*
+* `max_history_size` [int]: The maximum number of history entries displayed. *Default: 50*
+* `max_cache_age` [int]: How long in seconds before a cache entry expires. *Default: 60*
+* `data_dir` [string]: The directory where internal data is stored. *Default: .data*
+* `force_no_cache` [bool]: When true, prevent the program from reading from or writing to the cache. *Default: false*
+* `force_no_history` [bool]: When true, disable the search history functionality. *Default: false*
+* `mark_watched` [bool]: When true, mark videos as "Watched" on YouTube (requires cookiefile). *Default: false*
+* `use_thumbnails` [bool]: When true, video thumbnails are fetched and stored in the data directory, and then displayed next to the video title. *Default: false*
+* `thumbnail_size [float]`: Sets the thumbnail size relative to the text size if thumbnails are used. *Default: 2*
+* `subs_mode` [bool]: When true, fetch videos from a YouTube account's subscription feed instead of using a search query (requires cookiefile). *Default: false*
+* `wl_mode` [bool]: When true, fetch videos from a YouTube account's Watch Later playlist instead of using a search query (requires cookiefile). *Default: false*
+* `reverse` [true|false|'wl']: When true, reverse the order of the fetched videos, or only when using `wl_mode` if set to `'wl'`. *Default: false*
+* `use_max_downloads` [true|false|'wl']: When true, youtube-dl's `--max-downloads` flag will be used internally instead of `--playlist-end`. This ensures that the end of the playlist is fetched rather then just the first N videos reversed when used with the `--reverse` option. When set to `'wl'`, it will only be true when `wl_mode` is true. *Default: false*
 
 #### Example config
 
-The following is located at `~/.config/yt-search-play/config.json`. It sets the maximum time before the cache expires to be 10 minutes, sets the data directory to be the same as the config directory, and says that when accessing the user's Watch Later playlist fetch from the bottom of the list instead of the top by setting reverse mode and the use of max downloads to be true when watch later mode is true.
+The following is located at `~/.config/yt-search-play/config.json`. It sets the maximum time before the cache expires to be 10 minutes, sets the data directory to be the same as the config directory, and says that when accessing the user's Watch Later playlist fetch from the bottom of the list instead of the top by setting reverse mode and the use of max downloads to be true when watch later mode is true. Thumbnails are displayed, and videos are marked as watched on YoutTube.
 
 ```
 {

@@ -10,5 +10,6 @@
   "reverse_mode": "false",
   "use_max_downloads": "false",
   "mark_watched": "false",
-  "use_thumbnails": "false"
+  "use_thumbnails": "false",
+  "thumbnail_size": "2"
 }

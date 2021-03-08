@@ -64,6 +64,7 @@ reverse_mode=false
 use_max_downloads=false
 mark_watched=false
 use_thumbnails=false
+thumbnail_size=2
 
 ## Custom rofi exit codes
 
@@ -80,7 +81,7 @@ ROFI_REFRESH=19
 ## Define functions
 
 dump_config () {
-jq -n --arg search_size "$search_size" --arg max_history_size "$max_history_size" --arg max_cache_age "$max_cache_age" --arg data_dir "$data_dir" --arg force_no_cache "$force_no_cache" --arg force_no_history "$force_no_history" --arg subs_mode "$subs_mode" --arg wl_mode "$wl_mode" --arg reverse_mode "$reverse_mode" --arg use_max_downloads "$use_max_downloads" --arg mark_watched "$mark_watched" --arg use_thumbnails "$use_thumbnails" '{search_size: $search_size, max_history_size: $max_history_size, max_cache_age: $max_cache_age, data_dir: $data_dir, force_no_cache: $force_no_cache, force_no_history: $force_no_history, subs_mode: $subs_mode, wl_mode: $wl_mode, reverse_mode: $reverse_mode, use_max_downloads: $use_max_downloads, mark_watched: $mark_watched, use_thumbnails: $use_thumbnails}'
+jq -n --arg search_size "$search_size" --arg max_history_size "$max_history_size" --arg max_cache_age "$max_cache_age" --arg data_dir "$data_dir" --arg force_no_cache "$force_no_cache" --arg force_no_history "$force_no_history" --arg subs_mode "$subs_mode" --arg wl_mode "$wl_mode" --arg reverse_mode "$reverse_mode" --arg use_max_downloads "$use_max_downloads" --arg mark_watched "$mark_watched" --arg use_thumbnails "$use_thumbnails" --arg thumbnail_size "$thumbnail_size" '{search_size: $search_size, max_history_size: $max_history_size, max_cache_age: $max_cache_age, data_dir: $data_dir, force_no_cache: $force_no_cache, force_no_history: $force_no_history, subs_mode: $subs_mode, wl_mode: $wl_mode, reverse_mode: $reverse_mode, use_max_downloads: $use_max_downloads, mark_watched: $mark_watched, use_thumbnails: $use_thumbnails, thumbnail_size: $thumbnail_size}'
 }
 
 print_help () {
@@ -96,6 +97,7 @@ echo -en "The following options are available:
 -r|--reverse: Reverse the order of the displayed videos
 -m|--mark-watched: Mark videos as watched on YouTube
 -t|--thumbnails: Download and display video thumbnails
+--thumbnail-size [num]: How large to display thumbnails, relative to text size.
 --use-max-downloads: This uses youtube-dl's --max-downloads flag instead of --playlist-end internally
 -C|--force-no-cache: Prevent the program from reading from or writing to the cache
 -H|--force-no-history: Disable the search history
@@ -143,6 +145,7 @@ load_config () {
 		use_max_downloads=$(echo "$config" | jq -r --arg default "$use_max_downloads" '. | if has("use_max_downloads") then .use_max_downloads else $default end')
 		mark_watched=$(echo "$config" | jq -r --arg default "$mark_watched" '. | if has("mark_watched") then .mark_watched else $default end')
 		use_thumbnails=$(echo "$config" | jq -r --arg default "$use_thumbnails" '. | if has("use_thumbnails") then .use_thumbnails else $default end')
+		thumbnail_size=$(echo "$config" | jq -r --arg default "$thumbnail_size" '. | if has("thumbnail_size") then .thumbnail_size else $default end')
 	fi
 
 	if ! [[ "$search_size" =~ ^[0-9]+$ ]]
@@ -158,6 +161,11 @@ load_config () {
 	if ! [[ "$max_cache_age" =~ ^[0-9]+$ ]]
 	then
 		>&2 echo "Error in $configfile: max_cache_age must be an integer."
+		exit 1
+	fi
+	if ! [[ "$thumbnail_size" =~ ^[0-9]+(\.[0-9]+)?$ ]]
+	then
+		>&2 echo "Error in $configfile: thumbnail_size must be a number."
 		exit 1
 	fi
 
@@ -315,7 +323,7 @@ find_video () {
 
 	if [[ "$use_thumbnails" == "true" ]]
 	then
-		idx=$(echo -e "$(echo "$found_results" | jq -r --arg dd "$script_dir/$data_dir" '. | "\(.title) :: \(.uploader)\\0icon\\x1f\($dd)/thumbs/\(.id).jpg"' | head -n $playlist_end)" | rofi -dmenu -i -p 'Select Video' -show-icons -l 10 -scroll-method 0 -format i -async-pre-read 0 -selected-row $((playlist_end-search_size)); exit $?)
+		idx=$(echo -e "$(echo "$found_results" | jq -r --arg dd "$script_dir/$data_dir" '. | "\(.title) :: \(.uploader)\\0icon\\x1f\($dd)/thumbs/\(.id).jpg"' | head -n $playlist_end)" | rofi -dmenu -i -p 'Select Video' -show-icons -l 10 -scroll-method 0 -format i -async-pre-read 0 -selected-row $((playlist_end-search_size)) -theme-str "element-icon { size: ${thumbnail_size}em; }"; exit $?)
 	else
 		idx=$(echo "$found_results" | jq -r '. | "\(.title) :: \(.uploader)"' | head -n $playlist_end | rofi -dmenu -i -p 'Select Video' -no-show-icons -l 10 -scroll-method 0 -format i -async-pre-read 0 -selected-row $((playlist_end-search_size)); exit $?)
 	fi
@@ -404,6 +412,11 @@ process_args () {
 						shift
 						;;
 					--max-cache-age)
+  					if ! [[ "$2" =~ ^[0-9]+$ ]]
+					  then
+ 					   >&2 echo "$1 must be an integer."
+					    exit 1
+  					fi
 						max_cache_age="$2"
 						shift
 						shift
@@ -416,11 +429,26 @@ process_args () {
 						use_thumbnails=true
 						shift
 						;;
+					--thumbnail-size)
+  					if ! [[ "$2" =~ ^[0-9]+(\.[0-9]+)?$ ]]
+					  then
+ 					   >&2 echo "$1 must be a number."
+					    exit 1
+  					fi
+						thumbnail_size="$2"
+						shift
+						shift
+						;;
 					--use-max-downloads)
 						use_max_downloads=true
 						shift
 						;;
 					-n|--search-size)
+  					if ! [[ "$2" =~ ^[0-9]+$ ]]
+					  then
+ 					   >&2 echo "$1 must be an integer."
+					    exit 1
+  					fi
 						search_size="$2"
 						shift
 						shift
