@@ -489,7 +489,8 @@ do_search () {
 	playlist_end=$search_size
 	if [[ "$subs_mode" == "true" ]]
 	then
-		find_video "https://www.youtube.com/feed/subscriptions"
+		# flow=1 -> grid view, as list causes bugs!
+		find_video "https://www.youtube.com/feed/subscriptions?flow=1"
 	elif [[ "$wl_mode" == "true" ]]
 	then
 		find_video "https://www.youtube.com/playlist?list=WL"
