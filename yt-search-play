@@ -183,6 +183,7 @@ load_config () {
 	#TODO: allow for passed in cookiefile
 	cookiefile="$script_dir/$data_dir/cookies.txt"
 	cachefile="$script_dir/$data_dir/cache.json"
+	thumb_dir="$script_dir/$data_dir/thumbs"
 	
 	if [[ ! -f "$historyfile" ]]
 	then
@@ -198,6 +199,7 @@ clear_history () {
 
 clear_cache () {
 	rm -f "$cachefile"
+	rm -f "$thumb_dir"/*.jpg
 }
 
 update_history () {
@@ -217,7 +219,7 @@ update_history () {
 
 purge_expired_cache () {
 	local expiry_window="$(($(date +%s)-$max_cache_age))"
-	for dead_thumb in $(jq -r --arg time "$expiry_window" --arg dd "$script_dir/$data_dir" '.[] | select(.time < $time) | "\($dd)/thumbs/\(.cache[].id).jpg"' "$cachefile")
+	for dead_thumb in $(jq -r --arg time "$expiry_window" --arg td "$thumb_dir" '.[] | select(.time < $time) | "\($td)/\(.cache[].id).jpg"' "$cachefile")
 	do
 		rm -f "$dead_thumb"
 	done
@@ -323,7 +325,7 @@ find_video () {
 
 	if [[ "$use_thumbnails" == "true" ]]
 	then
-		idx=$(echo -e "$(echo "$found_results" | jq -r --arg dd "$script_dir/$data_dir" '. | "\(.title) :: \(.uploader)\\0icon\\x1f\($dd)/thumbs/\(.id).jpg"' | head -n $playlist_end)" | rofi -dmenu -i -p 'Select Video' -show-icons -l 10 -scroll-method 0 -format i -async-pre-read 0 -selected-row $((playlist_end-search_size)) -theme-str "element-icon { size: ${thumbnail_size}em; }"; exit $?)
+		idx=$(echo -e "$(echo "$found_results" | jq -r --arg td "$thumb_dir" '. | "\(.title) :: \(.uploader)\\0icon\\x1f\($td)/\(.id).jpg"' | head -n $playlist_end)" | rofi -dmenu -i -p 'Select Video' -show-icons -l 10 -scroll-method 0 -format i -async-pre-read 0 -selected-row $((playlist_end-search_size)) -theme-str "element-icon { size: ${thumbnail_size}em; }"; exit $?)
 	else
 		idx=$(echo "$found_results" | jq -r '. | "\(.title) :: \(.uploader)"' | head -n $playlist_end | rofi -dmenu -i -p 'Select Video' -no-show-icons -l 10 -scroll-method 0 -format i -async-pre-read 0 -selected-row $((playlist_end-search_size)); exit $?)
 	fi
@@ -358,9 +360,9 @@ get_thumbnails () {
   local thumb_idx=0
   for id in $(echo "$search" | jq -r '.id')
   do
-  	if [[ ! -f "$script_dir/$data_dir/thumbs/$id.jpg" ]]
+  	if [[ ! -f "$thumb_dir/$id.jpg" ]]
   	then
-  		wget -q --output-document="$script_dir/$data_dir/thumbs/$id.jpg" "https://i.ytimg.com/vi/$id/hqdefault.jpg" &
+  		wget -q --output-document="$thumb_dir/$id.jpg" "https://i.ytimg.com/vi/$id/hqdefault.jpg" &
   		thumb_pids[$((thumb_idx++))]=$!
   	fi
   done
