@@ -80,6 +80,8 @@ The following options are available:
 
 ## Known issues and upcoming features
 
+Since this script relies on youtube-dl rather than YouTube's API, it is subject to breaking if YouTube change the way they render webpages. If your results look something like "null :: null", this is probably why. Unfortunately, there's not much to be done in this scenario except wait for an upstream fix, or trying one of the [forks](https://github.com/yt-dlp/yt-dlp) of youtube-dl.
+
 The reverse mode is currently problematic due to the way that youtube-dl mixes the `--reverse` and `--playlist-end` flags. As a result, when the `--reverse` and `--use-max-downloads` options are both set, the `search_size` parameter is ignored initially (though it is obeyed for cached results). This ensures that the end of the playlist is actually shown first, instead of the Nth video. Hopefully youtube-dl will eventually fix this issue, but in the meantime, it's advisable to only use `--reverse` and `--use-max-downloads` together with small playlists. Using them with `--subs`, for example, is likely to cause an error.
 
 There is an underlying issue with YouTube/youtube-dl that can prevent playlists with over 100 videos in them from fetching any past the 100th. This notably affects both the subscription feed and the watch later playlist.
