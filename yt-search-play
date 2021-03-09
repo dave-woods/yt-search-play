@@ -7,41 +7,41 @@ check_failed=
 type gawk &>/dev/null
 if [[ $? -ne 0 ]]
 then
-	check_failed=true
-	>&2 echo "The dependency gawk is missing. Run \"sudo apt install gawk\" to install it."
+  check_failed=true
+  >&2 echo "The dependency gawk is missing. Run \"sudo apt install gawk\" to install it."
 fi
 
 type rofi &>/dev/null
 if [[ $? -ne 0 ]]
 then
-	check_failed=true
-	>&2 echo "The dependency rofi is missing. See https://github.com/davatorium/rofi/blob/next/INSTALL.md for instructions on how to install it."
+  check_failed=true
+  >&2 echo "The dependency rofi is missing. See https://github.com/davatorium/rofi/blob/next/INSTALL.md for instructions on how to install it."
 fi
 
 type jq &>/dev/null
 if [[ $? -ne 0 ]]
 then
-	check_failed=true
-	>&2 echo "The dependency jq is missing. Run \"sudo apt install jq\" to install it, or see https://stedolan.github.io/jq/download for further details."
+  check_failed=true
+  >&2 echo "The dependency jq is missing. Run \"sudo apt install jq\" to install it, or see https://stedolan.github.io/jq/download for further details."
 fi
 
 type youtube-dl &>/dev/null
 if [[ $? -ne 0 ]] 
 then
-	check_failed=true
-	>&2 echo "The dependency youtube-dl is missing. See https://github.com/ytdl-org/youtube-dl/blob/master/README.md#installation for instructions on how to install it."
+  check_failed=true
+  >&2 echo "The dependency youtube-dl is missing. See https://github.com/ytdl-org/youtube-dl/blob/master/README.md#installation for instructions on how to install it."
 fi
 
 type mpv &>/dev/null
 if [[ $? -ne 0 ]]
 then
-	check_failed=true
-	>&2 echo "The dependency mpv is missing. Run \"sudo apt install mpv\" to install it, or see https://mpv.io/installation for further details."
+  check_failed=true
+  >&2 echo "The dependency mpv is missing. Run \"sudo apt install mpv\" to install it, or see https://mpv.io/installation for further details."
 fi
 
 if [[ "$check_failed" ]]
 then
-	exit 1
+  exit 1
 fi
 
 ## Where am I?
@@ -75,7 +75,7 @@ ROFI_REFRESH=19
 ## Cleanup on exit
 # trap cleanup EXIT
 # cleanup () {
-	# echo "Exiting..."
+  # echo "Exiting..."
 # }
 
 ## Define functions
@@ -106,429 +106,429 @@ echo -en "The following options are available:
 }
 
 find_config () {
-	if [[ -s "$passed_configfile" ]]
-	then
-		echo "$passed_configfile"
-	elif [[ -s "$script_dir/config.json" ]]
-	then
-		echo "$script_dir/config.json"
-	elif [[ -s "$HOME/.config/yt-search-play/config.json" ]]
-	then
-		echo "$HOME/.config/yt-search-play/config.json"
-	else
-		echo "$default_configfile"
-	fi
+  if [[ -s "$passed_configfile" ]]
+  then
+    echo "$passed_configfile"
+  elif [[ -s "$script_dir/config.json" ]]
+  then
+    echo "$script_dir/config.json"
+  elif [[ -s "$HOME/.config/yt-search-play/config.json" ]]
+  then
+    echo "$HOME/.config/yt-search-play/config.json"
+  else
+    echo "$default_configfile"
+  fi
 }
 
 load_config () {
-	configfile="$(find_config)"
+  configfile="$(find_config)"
 
-	if [[ -n "$configfile" ]]
-	then
-		config=$(jq '.' "$configfile")
-		
-		if [[ -z "$config" ]]
-		then
-			>&2 echo "Error reading config in $configfile."
-			exit 1
-		fi
+  if [[ -n "$configfile" ]]
+  then
+    config=$(jq '.' "$configfile")
+    
+    if [[ -z "$config" ]]
+    then
+      >&2 echo "Error reading config in $configfile."
+      exit 1
+    fi
 
-		search_size=$(echo "$config" | jq -r --arg default "$search_size" '. | if has("search_size") then .search_size else $default end')
-		max_history_size=$(echo "$config" | jq -r --arg default "$max_history_size" '. | if has("max_history_size") then .max_history_size else $default end')
-		max_cache_age=$(echo "$config" | jq -r --arg default "$max_cache_age" '. | if has("max_cache_age") then .max_cache_age else $default end')
-		data_dir=$(echo "$config" | jq -r --arg default "$data_dir" '. | if has("data_dir") then .data_dir else $default end')
-		force_no_cache=$(echo "$config" | jq -r --arg default "$force_no_cache" '. | if has("force_no_cache") then .force_no_cache else $default end')
-		force_no_history=$(echo "$config" | jq -r --arg default "$force_no_history" '. | if has("force_no_history") then .force_no_history else $default end')
-		subs_mode=$(echo "$config" | jq -r --arg default "$subs_mode" '. | if has("subs_mode") then .subs_mode else $default end')
-		wl_mode=$(echo "$config" | jq -r --arg default "$wl_mode" '. | if has("wl_mode") then .wl_mode else $default end')
-		reverse_mode=$(echo "$config" | jq -r --arg default "$reverse_mode" '. | if has("reverse_mode") then .reverse_mode else $default end')
-		use_max_downloads=$(echo "$config" | jq -r --arg default "$use_max_downloads" '. | if has("use_max_downloads") then .use_max_downloads else $default end')
-		mark_watched=$(echo "$config" | jq -r --arg default "$mark_watched" '. | if has("mark_watched") then .mark_watched else $default end')
-		use_thumbnails=$(echo "$config" | jq -r --arg default "$use_thumbnails" '. | if has("use_thumbnails") then .use_thumbnails else $default end')
-		thumbnail_size=$(echo "$config" | jq -r --arg default "$thumbnail_size" '. | if has("thumbnail_size") then .thumbnail_size else $default end')
-	fi
+    search_size=$(echo "$config" | jq -r --arg default "$search_size" '. | if has("search_size") then .search_size else $default end')
+    max_history_size=$(echo "$config" | jq -r --arg default "$max_history_size" '. | if has("max_history_size") then .max_history_size else $default end')
+    max_cache_age=$(echo "$config" | jq -r --arg default "$max_cache_age" '. | if has("max_cache_age") then .max_cache_age else $default end')
+    data_dir=$(echo "$config" | jq -r --arg default "$data_dir" '. | if has("data_dir") then .data_dir else $default end')
+    force_no_cache=$(echo "$config" | jq -r --arg default "$force_no_cache" '. | if has("force_no_cache") then .force_no_cache else $default end')
+    force_no_history=$(echo "$config" | jq -r --arg default "$force_no_history" '. | if has("force_no_history") then .force_no_history else $default end')
+    subs_mode=$(echo "$config" | jq -r --arg default "$subs_mode" '. | if has("subs_mode") then .subs_mode else $default end')
+    wl_mode=$(echo "$config" | jq -r --arg default "$wl_mode" '. | if has("wl_mode") then .wl_mode else $default end')
+    reverse_mode=$(echo "$config" | jq -r --arg default "$reverse_mode" '. | if has("reverse_mode") then .reverse_mode else $default end')
+    use_max_downloads=$(echo "$config" | jq -r --arg default "$use_max_downloads" '. | if has("use_max_downloads") then .use_max_downloads else $default end')
+    mark_watched=$(echo "$config" | jq -r --arg default "$mark_watched" '. | if has("mark_watched") then .mark_watched else $default end')
+    use_thumbnails=$(echo "$config" | jq -r --arg default "$use_thumbnails" '. | if has("use_thumbnails") then .use_thumbnails else $default end')
+    thumbnail_size=$(echo "$config" | jq -r --arg default "$thumbnail_size" '. | if has("thumbnail_size") then .thumbnail_size else $default end')
+  fi
 
-	if ! [[ "$search_size" =~ ^[0-9]+$ ]]
-	then
-		>&2 echo "Error in $configfile: search_size must be an integer."
-		exit 1
-	fi
-	if ! [[ "$max_history_size" =~ ^[0-9]+$ ]]
-	then
-		>&2 echo "Error in $configfile: max_history_size must be an integer."
-		exit 1
-	fi
-	if ! [[ "$max_cache_age" =~ ^[0-9]+$ ]]
-	then
-		>&2 echo "Error in $configfile: max_cache_age must be an integer."
-		exit 1
-	fi
-	if ! [[ "$thumbnail_size" =~ ^[0-9]+(\.[0-9]+)?$ ]]
-	then
-		>&2 echo "Error in $configfile: thumbnail_size must be a number."
-		exit 1
-	fi
+  if ! [[ "$search_size" =~ ^[0-9]+$ ]]
+  then
+    >&2 echo "Error in $configfile: search_size must be an integer."
+    exit 1
+  fi
+  if ! [[ "$max_history_size" =~ ^[0-9]+$ ]]
+  then
+    >&2 echo "Error in $configfile: max_history_size must be an integer."
+    exit 1
+  fi
+  if ! [[ "$max_cache_age" =~ ^[0-9]+$ ]]
+  then
+    >&2 echo "Error in $configfile: max_cache_age must be an integer."
+    exit 1
+  fi
+  if ! [[ "$thumbnail_size" =~ ^[0-9]+(\.[0-9]+)?$ ]]
+  then
+    >&2 echo "Error in $configfile: thumbnail_size must be a number."
+    exit 1
+  fi
 
-	case $data_dir in
-		/*) mkdir -p "$data_dir" ;;
-		*) mkdir -p "$script_dir/$data_dir" ;;
-	esac
-	if [[ $? -ne 0 ]]
-	then
-		>&2 echo "Error in $configfile: $data_dir is not a valid directory."
-		exit 1
-	fi
+  case $data_dir in
+    /*) mkdir -p "$data_dir" ;;
+    *) mkdir -p "$script_dir/$data_dir" ;;
+  esac
+  if [[ $? -ne 0 ]]
+  then
+    >&2 echo "Error in $configfile: $data_dir is not a valid directory."
+    exit 1
+  fi
 
-	historyfile="$script_dir/$data_dir/search-history"
-	#TODO: allow for passed in cookiefile
-	cookiefile="$script_dir/$data_dir/cookies.txt"
-	cachefile="$script_dir/$data_dir/cache.json"
-	thumb_dir="$script_dir/$data_dir/thumbs"
-	
-	if [[ ! -f "$historyfile" ]]
-	then
-		touch -a "$historyfile"
-	fi
-	history_size=$(< "$historyfile" wc -l 2>/dev/null || echo 0)
-	playlist_start=1
+  historyfile="$script_dir/$data_dir/search-history"
+  #TODO: allow for passed in cookiefile
+  cookiefile="$script_dir/$data_dir/cookies.txt"
+  cachefile="$script_dir/$data_dir/cache.json"
+  thumb_dir="$script_dir/$data_dir/thumbs"
+  
+  if [[ ! -f "$historyfile" ]]
+  then
+    touch -a "$historyfile"
+  fi
+  history_size=$(< "$historyfile" wc -l 2>/dev/null || echo 0)
+  playlist_start=1
 }
 
 clear_history () {
-	rm -f "$historyfile"
+  rm -f "$historyfile"
 }
 
 clear_cache () {
-	rm -f "$cachefile"
-	rm -f "$thumb_dir"/*.jpg
+  rm -f "$cachefile"
+  rm -f "$thumb_dir"/*.jpg
 }
 
 update_history () {
-	if [[ -n "$search_query" ]]
-	then
-		sed -i '\`'"$search_query"'`d' "$historyfile"
-		echo "$search_query" >> "$historyfile"
-	fi
-	if [[ -n "$url" ]]
-	then
-		sed -i '\`'"$history_entry"'`d' "$historyfile"
-		echo "$history_entry" >> "$historyfile"
-	fi
+  if [[ -n "$search_query" ]]
+  then
+    sed -i '\`'"$search_query"'`d' "$historyfile"
+    echo "$search_query" >> "$historyfile"
+  fi
+  if [[ -n "$url" ]]
+  then
+    sed -i '\`'"$history_entry"'`d' "$historyfile"
+    echo "$history_entry" >> "$historyfile"
+  fi
 
-	echo "$(tail -n $max_history_size "$historyfile")" > "$historyfile"
+  echo "$(tail -n $max_history_size "$historyfile")" > "$historyfile"
 }
 
 purge_expired_cache () {
-	local expiry_window="$(($(date +%s)-$max_cache_age))"
-	for dead_thumb in $(jq -r --arg time "$expiry_window" --arg td "$thumb_dir" '.[] | select(.time < $time) | "\($td)/\(.cache[].id).jpg"' "$cachefile")
-	do
-		rm -f "$dead_thumb"
-	done
-	jq --arg time "$expiry_window" 'del(.[] | select(.time < $time))' "$cachefile" > "$cachefile.tmp" && mv "$cachefile.tmp" "$cachefile"
+  local expiry_window="$(($(date +%s)-$max_cache_age))"
+  for dead_thumb in $(jq -r --arg time "$expiry_window" --arg td "$thumb_dir" '.[] | select(.time < $time) | "\($td)/\(.cache[].id).jpg"' "$cachefile")
+  do
+    rm -f "$dead_thumb"
+  done
+  jq --arg time "$expiry_window" 'del(.[] | select(.time < $time))' "$cachefile" > "$cachefile.tmp" && mv "$cachefile.tmp" "$cachefile"
 }
 
 write_to_cache () {
-	if [[ ! -s "$cachefile" ]] || [[ -z "$(cat "$cachefile" | tr -d '[:space:]')" ]]
+  if [[ ! -s "$cachefile" ]] || [[ -z "$(cat "$cachefile" | tr -d '[:space:]')" ]]
   then
     echo "[]" > "$cachefile"
   fi
 
   local cache=$(echo "$2" | jq --slurp '.')
   
-	if [[ -n "$cache" ]] && [[ "$cache" != "[]" ]]
-	then
-		jq --arg sel "$1" 'del(.[] | select(.entry == $sel))' "$cachefile" | jq --arg sel "$1" --arg time "$(date +%s)" --argjson cc "$cache" '. += [{entry: $sel, time: $time, cache: $cc, size: ($cc|length)}]' > "$cachefile.tmp" && mv "$cachefile.tmp" "$cachefile"
-	fi
+  if [[ -n "$cache" ]] && [[ "$cache" != "[]" ]]
+  then
+    jq --arg sel "$1" 'del(.[] | select(.entry == $sel))' "$cachefile" | jq --arg sel "$1" --arg time "$(date +%s)" --argjson cc "$cache" '. += [{entry: $sel, time: $time, cache: $cc, size: ($cc|length)}]' > "$cachefile.tmp" && mv "$cachefile.tmp" "$cachefile"
+  fi
 }
 
 read_from_cache () {
-	if [[ -s "$cachefile" ]]
-	then
-		purge_expired_cache
-		local entry_found=$(jq --arg sel "$1" '.[] | select(.entry == $sel)' "$cachefile")
-		if [[ -n "$entry_found" ]] 
-		then
-			cache_size=$(echo "$entry_found" | jq -r '.size')
-			if [[ $cache_size -lt $playlist_end ]]
-			then
-				partial_cache="true"
-				playlist_start=$((cache_size+1))
-			fi
-			cache_value=$(echo "$entry_found" | jq -r '.cache[]')
-		fi
-	fi 
+  if [[ -s "$cachefile" ]]
+  then
+    purge_expired_cache
+    local entry_found=$(jq --arg sel "$1" '.[] | select(.entry == $sel)' "$cachefile")
+    if [[ -n "$entry_found" ]] 
+    then
+      cache_size=$(echo "$entry_found" | jq -r '.size')
+      if [[ $cache_size -lt $playlist_end ]]
+      then
+        partial_cache="true"
+        playlist_start=$((cache_size+1))
+      fi
+      cache_value=$(echo "$entry_found" | jq -r '.cache[]')
+    fi
+  fi 
 }
 
 find_video () {
-	if [[ $FINDING -eq 1 ]]
-	then
-		return 1
-	fi
+  if [[ $FINDING -eq 1 ]]
+  then
+    return 1
+  fi
 
-	FINDING=1
-	local search_url="$1"
-	cache_value=
-	partial_cache=
-	selection=
-	url=
+  FINDING=1
+  local search_url="$1"
+  cache_value=
+  partial_cache=
+  selection=
+  url=
 
-	if [[ "$subs_mode" == "true" ]] || [[ "$wl_mode" == "true" ]]
-	then
-		# check/update this file if sub feed breaks
-		if [[ -s "$cookiefile" ]]
-		then
-			local include_cookies="--cookies $cookiefile"
-		else
-			>&2 echo "A valid cookies.txt file must exist in $data_dir."
-			FINDING=0
-			exit 1
-		fi
-	fi
-	
-	if [[ "$reverse_mode" == "true" ]] || ([[ "$reverse_mode" == "wl" ]] && [[ "$wl_mode" == "true" ]])
-	then
-		reverse="--playlist-reverse"
-	else
-		reverse=
-	fi
+  if [[ "$subs_mode" == "true" ]] || [[ "$wl_mode" == "true" ]]
+  then
+    # check/update this file if sub feed breaks
+    if [[ -s "$cookiefile" ]]
+    then
+      local include_cookies="--cookies $cookiefile"
+    else
+      >&2 echo "A valid cookies.txt file must exist in $data_dir."
+      FINDING=0
+      exit 1
+    fi
+  fi
+  
+  if [[ "$reverse_mode" == "true" ]] || ([[ "$reverse_mode" == "wl" ]] && [[ "$wl_mode" == "true" ]])
+  then
+    reverse="--playlist-reverse"
+  else
+    reverse=
+  fi
 
-	# this will be deprecated in future
-	if [[ "$use_max_downloads" == "true" ]] || ([[ "$use_max_downloads" == "wl" ]] && [[ "$wl_mode" == "true" ]])
-	then
-		playlist_ender="--max-downloads"
-	else
-		playlist_ender="--playlist-end"
-	fi
+  # this will be deprecated in future
+  if [[ "$use_max_downloads" == "true" ]] || ([[ "$use_max_downloads" == "wl" ]] && [[ "$wl_mode" == "true" ]])
+  then
+    playlist_ender="--max-downloads"
+  else
+    playlist_ender="--playlist-end"
+  fi
 
-	[[ "$refresh_cache" != "true" ]] && [[ "$force_no_cache" != "true" ]] && read_from_cache "$search_url"
-	
-	refresh_cache=false
-	if [[ -z "$cache_value" ]] || [[ "$partial_cache" == "true" ]]
-	then
-		rofi -e "Loading videos..." &
-		mesgpid=$!
-		# reverse and max-downloads will get all videos, used due to below
-		# https://github.com/ytdl-org/youtube-dl/pull/24487
-		local search="$(youtube-dl -i $reverse --playlist-start $playlist_start $playlist_ender $playlist_end $include_cookies -j "$search_url" --flat-playlist | jq -r --unbuffered '. | {title: .title, uploader: .uploader, id: .url, url: ("http://www.youtube.com/watch?v=" + .url)}')"
-		{ kill $mesgpid && wait $mesgpid; } &>/dev/null
-		
-		if [[ "$use_thumbnails" == "true" ]]
-		then
-			get_thumbnails
-		fi
+  [[ "$refresh_cache" != "true" ]] && [[ "$force_no_cache" != "true" ]] && read_from_cache "$search_url"
+  
+  refresh_cache=false
+  if [[ -z "$cache_value" ]] || [[ "$partial_cache" == "true" ]]
+  then
+    rofi -e "Loading videos..." &
+    mesgpid=$!
+    # reverse and max-downloads will get all videos, used due to below
+    # https://github.com/ytdl-org/youtube-dl/pull/24487
+    local search="$(youtube-dl -i $reverse --playlist-start $playlist_start $playlist_ender $playlist_end $include_cookies -j "$search_url" --flat-playlist | jq -r --unbuffered '. | {title: .title, uploader: .uploader, id: .url, url: ("http://www.youtube.com/watch?v=" + .url)}')"
+    { kill $mesgpid && wait $mesgpid; } &>/dev/null
+    
+    if [[ "$use_thumbnails" == "true" ]]
+    then
+      get_thumbnails
+    fi
 
-		local found_results="$(jq --slurp '.[]' <(echo "$cache_value") <(echo "$search"))"
+    local found_results="$(jq --slurp '.[]' <(echo "$cache_value") <(echo "$search"))"
 
-		[[ "$force_no_cache" != "true" ]] && write_to_cache "$search_url" "$found_results"
-	else
-		local found_results="$cache_value"
-	fi
+    [[ "$force_no_cache" != "true" ]] && write_to_cache "$search_url" "$found_results"
+  else
+    local found_results="$cache_value"
+  fi
 
-	if [[ "$use_thumbnails" == "true" ]]
-	then
-		idx=$(echo -e "$(echo "$found_results" | jq -r --arg td "$thumb_dir" '. | "\(.title) :: \(.uploader)\\0icon\\x1f\($td)/\(.id).jpg"' | head -n $playlist_end)" | rofi -dmenu -i -p 'Select Video' -show-icons -l 10 -scroll-method 0 -format i -async-pre-read 0 -selected-row $((playlist_end-search_size)) -theme-str "element-icon { size: ${thumbnail_size}em; }"; exit $?)
-	else
-		idx=$(echo "$found_results" | jq -r '. | "\(.title) :: \(.uploader)"' | head -n $playlist_end | rofi -dmenu -i -p 'Select Video' -no-show-icons -l 10 -scroll-method 0 -format i -async-pre-read 0 -selected-row $((playlist_end-search_size)); exit $?)
-	fi
-	rofi_exit_code=$?
+  if [[ "$use_thumbnails" == "true" ]]
+  then
+    idx=$(echo -e "$(echo "$found_results" | jq -r --arg td "$thumb_dir" '. | "\(.title) :: \(.uploader)\\0icon\\x1f\($td)/\(.id).jpg"' | head -n $playlist_end)" | rofi -dmenu -i -p 'Select Video' -show-icons -l 10 -scroll-method 0 -format i -async-pre-read 0 -selected-row $((playlist_end-search_size)) -theme-str "element-icon { size: ${thumbnail_size}em; }"; exit $?)
+  else
+    idx=$(echo "$found_results" | jq -r '. | "\(.title) :: \(.uploader)"' | head -n $playlist_end | rofi -dmenu -i -p 'Select Video' -no-show-icons -l 10 -scroll-method 0 -format i -async-pre-read 0 -selected-row $((playlist_end-search_size)); exit $?)
+  fi
+  rofi_exit_code=$?
 
-	if [[ $rofi_exit_code -eq $ROFI_OK ]] && [[ -n "$idx" ]] && [[ $idx -ge 0 ]]
-	then
-		selection=$(echo "$found_results" | jq --slurp -r --arg idx $idx '.[$idx|tonumber]')
-	elif [[ $rofi_exit_code -eq $ROFI_MORE ]]
-	then
-		playlist_end=$((playlist_end+search_size))
-		FINDING=0
-		find_video "$1"
-	elif [[ $rofi_exit_code -eq $ROFI_REFRESH ]]
-	then
-		playlist_start=1
-		playlist_end=$search_size
-		refresh_cache=true
-		FINDING=0
-		find_video "$1"
-	fi
+  if [[ $rofi_exit_code -eq $ROFI_OK ]] && [[ -n "$idx" ]] && [[ $idx -ge 0 ]]
+  then
+    selection=$(echo "$found_results" | jq --slurp -r --arg idx $idx '.[$idx|tonumber]')
+  elif [[ $rofi_exit_code -eq $ROFI_MORE ]]
+  then
+    playlist_end=$((playlist_end+search_size))
+    FINDING=0
+    find_video "$1"
+  elif [[ $rofi_exit_code -eq $ROFI_REFRESH ]]
+  then
+    playlist_start=1
+    playlist_end=$search_size
+    refresh_cache=true
+    FINDING=0
+    find_video "$1"
+  fi
 
-	url=$(echo "$selection" | jq -r '.url')
-	history_entry="$(echo "$selection" | jq -r '"\(.title) :: \(.uploader) :: \(.url)"')"
-	FINDING=0
+  url=$(echo "$selection" | jq -r '.url')
+  history_entry="$(echo "$selection" | jq -r '"\(.title) :: \(.uploader) :: \(.url)"')"
+  FINDING=0
 }
 
-get_thumbnails () {	
+get_thumbnails () { 
   rofi -e "Fetching thumbnails..." &
   mesgpid=$!
   mkdir -p "$data_dir/thumbs"
   local thumb_idx=0
   for id in $(echo "$search" | jq -r '.id')
   do
-  	if [[ ! -f "$thumb_dir/$id.jpg" ]]
-  	then
-  		wget -q --output-document="$thumb_dir/$id.jpg" "https://i.ytimg.com/vi/$id/hqdefault.jpg" &
-  		thumb_pids[$((thumb_idx++))]=$!
-  	fi
+    if [[ ! -f "$thumb_dir/$id.jpg" ]]
+    then
+      wget -q --output-document="$thumb_dir/$id.jpg" "https://i.ytimg.com/vi/$id/hqdefault.jpg" &
+      thumb_pids[$((thumb_idx++))]=$!
+    fi
   done
   for thumb_pid in ${thumb_pids[*]}
   do
-  	wait $thumb_pid
+    wait $thumb_pid
   done
   { kill $mesgpid && wait $mesgpid; } &>/dev/null
 }
 
 process_args () {
-	if [[ $# -gt 0 ]]
-	then
-		if [[ "$@" =~ --generate-config ]]
-		then
-			echo "Default config generated in: $default_configfile"
-			exit
-		elif [[ "$@" =~ --dump-config ]]
-		then
-			echo "Config file located at: $configfile"
-			dump_config
-			exit
-		elif [[ "$@" =~ --clear-history ]] && [[ "$@" =~ --clear-cache ]]
-		then
-			clear_history
-			clear_cache
-			exit
-		elif [[ "$@" =~ --clear-history ]]
-		then
-			clear_history
-			exit
-		elif [[ "$@" =~ --clear-cache ]]
-		then
-			clear_cache
-			exit
-		else
-			while [[ $# -gt 0 ]]
-			do
-				key="$1"
-				case $key in
-					-s|--subs)
-						subs_mode=true
-						shift
-						;;
-					-wl|--watch-later)
-						wl_mode=true
-						shift
-						;;
-					-r|--reverse)
-						reverse_mode=true
-						shift
-						;;
-					--max-cache-age)
-  					if ! [[ "$2" =~ ^[0-9]+$ ]]
-					  then
- 					   >&2 echo "$1 must be an integer."
-					    exit 1
-  					fi
-						max_cache_age="$2"
-						shift
-						shift
-						;;
-					-m|--mark-watched)
-						mark_watched=true
-						shift
-						;;
-					-t|--thumbnails)
-						use_thumbnails=true
-						shift
-						;;
-					--thumbnail-size)
-  					if ! [[ "$2" =~ ^[0-9]+(\.[0-9]+)?$ ]]
-					  then
- 					   >&2 echo "$1 must be a number."
-					    exit 1
-  					fi
-						thumbnail_size="$2"
-						shift
-						shift
-						;;
-					--use-max-downloads)
-						use_max_downloads=true
-						shift
-						;;
-					-n|--search-size)
-  					if ! [[ "$2" =~ ^[0-9]+$ ]]
-					  then
- 					   >&2 echo "$1 must be an integer."
-					    exit 1
-  					fi
-						search_size="$2"
-						shift
-						shift
-						;;
-					-C|--force-no-cache)
-						force_no_cache=true
-						shift
-						;;
-					-H|--force-no-history)
-						force_no_history=true
-						shift
-						;;
-					--config)
-						passed_configfile="$2"
-						load_config
-						shift
-						shift
-						;;
-					-h|--help)
-						echo "$(print_help)"
-						exit
-						;;
-					*)
-						echo "Unrecognised option $1" >&2
-						exit 1
-						;;
-				esac
-			done
-		fi
-	fi
+  if [[ $# -gt 0 ]]
+  then
+    if [[ "$@" =~ --generate-config ]]
+    then
+      echo "Default config generated in: $default_configfile"
+      exit
+    elif [[ "$@" =~ --dump-config ]]
+    then
+      echo "Config file located at: $configfile"
+      dump_config
+      exit
+    elif [[ "$@" =~ --clear-history ]] && [[ "$@" =~ --clear-cache ]]
+    then
+      clear_history
+      clear_cache
+      exit
+    elif [[ "$@" =~ --clear-history ]]
+    then
+      clear_history
+      exit
+    elif [[ "$@" =~ --clear-cache ]]
+    then
+      clear_cache
+      exit
+    else
+      while [[ $# -gt 0 ]]
+      do
+        key="$1"
+        case $key in
+          -s|--subs)
+            subs_mode=true
+            shift
+            ;;
+          -wl|--watch-later)
+            wl_mode=true
+            shift
+            ;;
+          -r|--reverse)
+            reverse_mode=true
+            shift
+            ;;
+          --max-cache-age)
+            if ! [[ "$2" =~ ^[0-9]+$ ]]
+            then
+             >&2 echo "$1 must be an integer."
+              exit 1
+            fi
+            max_cache_age="$2"
+            shift
+            shift
+            ;;
+          -m|--mark-watched)
+            mark_watched=true
+            shift
+            ;;
+          -t|--thumbnails)
+            use_thumbnails=true
+            shift
+            ;;
+          --thumbnail-size)
+            if ! [[ "$2" =~ ^[0-9]+(\.[0-9]+)?$ ]]
+            then
+             >&2 echo "$1 must be a number."
+              exit 1
+            fi
+            thumbnail_size="$2"
+            shift
+            shift
+            ;;
+          --use-max-downloads)
+            use_max_downloads=true
+            shift
+            ;;
+          -n|--search-size)
+            if ! [[ "$2" =~ ^[0-9]+$ ]]
+            then
+             >&2 echo "$1 must be an integer."
+              exit 1
+            fi
+            search_size="$2"
+            shift
+            shift
+            ;;
+          -C|--force-no-cache)
+            force_no_cache=true
+            shift
+            ;;
+          -H|--force-no-history)
+            force_no_history=true
+            shift
+            ;;
+          --config)
+            passed_configfile="$2"
+            load_config
+            shift
+            shift
+            ;;
+          -h|--help)
+            echo "$(print_help)"
+            exit
+            ;;
+          *)
+            echo "Unrecognised option $1" >&2
+            exit 1
+            ;;
+        esac
+      done
+    fi
+  fi
 }
 
 do_search () {
-	playlist_end=$search_size
-	if [[ "$subs_mode" == "true" ]]
-	then
-		# flow=1 -> grid view, as list causes bugs!
-		find_video "https://www.youtube.com/feed/subscriptions?flow=1"
-	elif [[ "$wl_mode" == "true" ]]
-	then
-		find_video "https://www.youtube.com/playlist?list=WL"
-	else
-		if [[ "$force_no_history" != "true" ]]
-		then
-			local history_entries=$(tac "$historyfile")
-		else
-			history_size=0
-		fi
-		search_query=$(echo "$history_entries" | rofi -dmenu -i -p "Search YouTube" -no-show-icons -theme-str 'entry { placeholder: "Enter text or select recent search..."; }' -l $([[ $history_size -lt 10 ]] && echo "$history_size" || echo 10) -scroll-method 0)
-		if [[ "$search_query" =~ (https?\:\/\/)?(www\.)?(youtube\.com|youtu\.?be)\/.+$ ]]
-		then
-			selection="$search_query"
-			url="${BASH_REMATCH[0]}"
-		elif [[ "$search_query" =~ ^@(.+)$ ]]
-		then
-			sanitised_query=${BASH_REMATCH[1]// /+}
-			youtube-dl -s --flat-playlist "https://www.youtube.com/c/$sanitised_query" &>/dev/null && [[ $? -eq 0 ]] && [[ $FINDING -ne 1 ]] && find_video "https://www.youtube.com/c/$sanitised_query/videos" &
-			youtube-dl -s --flat-playlist "https://www.youtube.com/channel/$sanitised_query" &>/dev/null &&	[[ $? -eq 0 ]] && [[ $FINDING -ne 1 ]] && find_video "https://www.youtube.com/channel/$sanitised_query/videos" &
-			youtube-dl -s --flat-playlist "https://www.youtube.com/user/$sanitised_query" &>/dev/null && [[ $? -eq 0 ]] && [[ $FINDING -ne 1 ]] && find_video "https://www.youtube.com/user/$sanitised_query/videos" &
-			wait
-		elif [[ -n "$search_query" ]]
-		then
-			sanitised_query=${search_query// /+}
-			find_video "ytsearchall:$sanitised_query"
-		else
-			exit
-		fi
-	fi
+  playlist_end=$search_size
+  if [[ "$subs_mode" == "true" ]]
+  then
+    # flow=1 -> grid view, as list causes bugs!
+    find_video "https://www.youtube.com/feed/subscriptions?flow=1"
+  elif [[ "$wl_mode" == "true" ]]
+  then
+    find_video "https://www.youtube.com/playlist?list=WL"
+  else
+    if [[ "$force_no_history" != "true" ]]
+    then
+      local history_entries=$(tac "$historyfile")
+    else
+      history_size=0
+    fi
+    search_query=$(echo "$history_entries" | rofi -dmenu -i -p "Search YouTube" -no-show-icons -theme-str 'entry { placeholder: "Enter text or select recent search..."; }' -l $([[ $history_size -lt 10 ]] && echo "$history_size" || echo 10) -scroll-method 0)
+    if [[ "$search_query" =~ (https?\:\/\/)?(www\.)?(youtube\.com|youtu\.?be)\/.+$ ]]
+    then
+      selection="$search_query"
+      url="${BASH_REMATCH[0]}"
+    elif [[ "$search_query" =~ ^@(.+)$ ]]
+    then
+      sanitised_query=${BASH_REMATCH[1]// /+}
+      youtube-dl -s --flat-playlist "https://www.youtube.com/c/$sanitised_query" &>/dev/null && [[ $? -eq 0 ]] && [[ $FINDING -ne 1 ]] && find_video "https://www.youtube.com/c/$sanitised_query/videos" &
+      youtube-dl -s --flat-playlist "https://www.youtube.com/channel/$sanitised_query" &>/dev/null && [[ $? -eq 0 ]] && [[ $FINDING -ne 1 ]] && find_video "https://www.youtube.com/channel/$sanitised_query/videos" &
+      youtube-dl -s --flat-playlist "https://www.youtube.com/user/$sanitised_query" &>/dev/null && [[ $? -eq 0 ]] && [[ $FINDING -ne 1 ]] && find_video "https://www.youtube.com/user/$sanitised_query/videos" &
+      wait
+    elif [[ -n "$search_query" ]]
+    then
+      sanitised_query=${search_query// /+}
+      find_video "ytsearchall:$sanitised_query"
+    else
+      exit
+    fi
+  fi
 }
 
 play_video () {
-	if [[ -n "$url" ]]
-	then
-		pkill mpv
-		mpv --really-quiet "$url" "$([[ "$mark_watched" == "true" ]] && [[ -s "$cookiefile" ]] && echo "--ytdl-raw-options=mark-watched=,cookies=$cookiefile")" &
-	fi
+  if [[ -n "$url" ]]
+  then
+    pkill mpv
+    mpv --really-quiet "$url" "$([[ "$mark_watched" == "true" ]] && [[ -s "$cookiefile" ]] && echo "--ytdl-raw-options=mark-watched=,cookies=$cookiefile")" &
+  fi
 }
 
 ## (Re)write default config
