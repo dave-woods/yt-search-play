@@ -44,12 +44,14 @@ if [[ $? -ne 0 ]]
 then
 	check_failed=true
 	>&2 echo "The dependency npm is missing. Run \"sudo apt install npm\" to install it, or see https://nodejs.org/en/download/package-manager for further details."
+fi
 
 type node &>/dev/null
 if [[ $? -ne 0 ]]
 then
 	check_failed=true
 	>&2 echo "The dependency node is missing. Run \"sudo apt install node\" to install it, or see https://nodejs.org/en/download/package-manager for further details."
+fi
 
 if [[ "$check_failed" ]]
 then
