@@ -48,7 +48,7 @@ If cached results are displayed, pressing **Alt+0** will empty the cache and rel
 
 To display just a particular channel's videos, you can use the "@" symbol before the channel's name to find their most recent uploads. For example, typing `@drawfee` will bring up the most recent videos from [Drawfee Show](https://www.youtube.com/c/drawfee).
 
-If using the experimental `puppets` branch, you can use **Shift + Enter** to select multiple videos, and then pressing **Alt+3** will send a signal to YouTube to add those videos to the account's Watch Later playlist, or to remove them if they are already present in that playlist. In order for this to work you *must* place a file named `cookies.json` inside the `ppt` directory, which is generated in the same way as the `cookies.txt` file below, but using the JSON format instead of the Netscape format.
+If using the `experimental` branch, you can use **Shift + Enter** to select multiple videos, and then pressing **Alt+3** will send a signal to YouTube to add those videos to the account's Watch Later playlist, or to remove them if they are already present in that playlist. In order for this to work you *must* place a file named `cookies.json` inside the `ppt` directory, which is generated in the same way as the `cookies.txt` file below, but using the JSON format instead of the Netscape format.
 
 #### Accessing subscription feed or Watch Later playlist
 
