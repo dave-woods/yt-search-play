@@ -4,40 +4,23 @@
 
 check_failed=
 
-type gawk &>/dev/null
-if [[ $? -ne 0 ]]
-then
-  check_failed=true
-  >&2 echo "The dependency gawk is missing. Run \"sudo apt install gawk\" to install it."
-fi
+declare -A deps=( \
+	["gawk"]="The dependency gawk is missing. Run \"sudo apt install gawk\" to install it." \
+	["rofi"]="The dependency rofi is missing. See https://github.com/davatorium/rofi/blob/next/INSTALL.md for instructions on how to install it." \
+	["jq"]="The dependency jq is missing. Run \"sudo apt install jq\" to install it, or see https://stedolan.github.io/jq/download for further details." \
+	["youtube-dl"]="The dependency youtube-dl is missing. See https://github.com/ytdl-org/youtube-dl/blob/master/README.md#installation for instructions on how to install it." \
+	["mpv"]="The dependency mpv is missing. Run \"sudo apt install mpv\" to install it, or see https://mpv.io/installation for further details." \
+	)
 
-type rofi &>/dev/null
-if [[ $? -ne 0 ]]
-then
-  check_failed=true
-  >&2 echo "The dependency rofi is missing. See https://github.com/davatorium/rofi/blob/next/INSTALL.md for instructions on how to install it."
-fi
-
-type jq &>/dev/null
-if [[ $? -ne 0 ]]
-then
-  check_failed=true
-  >&2 echo "The dependency jq is missing. Run \"sudo apt install jq\" to install it, or see https://stedolan.github.io/jq/download for further details."
-fi
-
-type youtube-dl &>/dev/null
-if [[ $? -ne 0 ]] 
-then
-  check_failed=true
-  >&2 echo "The dependency youtube-dl is missing. See https://github.com/ytdl-org/youtube-dl/blob/master/README.md#installation for instructions on how to install it."
-fi
-
-type mpv &>/dev/null
-if [[ $? -ne 0 ]]
-then
-  check_failed=true
-  >&2 echo "The dependency mpv is missing. Run \"sudo apt install mpv\" to install it, or see https://mpv.io/installation for further details."
-fi
+for dep in "${!deps[@]}"
+do
+	type "$dep" &>/dev/null
+	if [[ $? -ne 0 ]]
+	then
+		check_failed=true
+		>&2 echo "${deps[$dep]}"
+	fi
+done
 
 if [[ "$check_failed" ]]
 then
