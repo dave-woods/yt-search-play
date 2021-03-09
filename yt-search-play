@@ -39,6 +39,18 @@ then
 	>&2 echo "The dependency mpv is missing. Run \"sudo apt install mpv\" to install it, or see https://mpv.io/installation for further details."
 fi
 
+type npm &>/dev/null
+if [[ $? -ne 0 ]]
+then
+	check_failed=true
+	>&2 echo "The dependency npm is missing. Run \"sudo apt install npm\" to install it, or see https://nodejs.org/en/download/package-manager for further details."
+
+type node &>/dev/null
+if [[ $? -ne 0 ]]
+then
+	check_failed=true
+	>&2 echo "The dependency node is missing. Run \"sudo apt install node\" to install it, or see https://nodejs.org/en/download/package-manager for further details."
+
 if [[ "$check_failed" ]]
 then
 	exit 1
@@ -339,7 +351,7 @@ find_video () {
 		i=0
 		for ii in $idx
 		do
-			selection=$(echo "$found_results" | jq --slurp -r --arg idx $ii '.[$idx|tonumber]')
+			selection=$(echo "$found_results" | jq --slurp -r --arg idx "$ii" '.[$idx|tonumber]')
 			urls[$((i++))]=$(echo "$selection" | jq -r '.url')
 		done
 	elif [[ $rofi_exit_code -eq $ROFI_MORE ]]
@@ -360,7 +372,7 @@ find_video () {
 	history_entry="$(echo "$selection" | jq -r '"\(.title) :: \(.uploader) :: \(.url)"')"
 	if [[ $rofi_exit_code -eq $ROFI_SEND_WL ]] && [[ -n "$url" ]]
 	then
-  	rofi -e "Updating playlist..." &
+  	rofi -e "Updating playlist, this may take a moment..." &
   	mesgpid=$!
 		i=0
 		for uuu in ${urls[*]}

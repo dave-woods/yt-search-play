@@ -16,23 +16,19 @@ Listed versions below have been tested. Newer releases should work fine, but old
 * mpv 0.14.0
 * jq 1.5.1 (used to parse the data from youtube-dl)
 * gawk 4.1.3 (GNU awk, for pretty printing)
+* npm 7.5.3, node 15.10.0 (used to toggle a video's inclusion in the Watch Later playlist)
 
 ## Installation and usage
 
 Make sure to give the script execution permission once it's downloaded. If you download just the script alone, you can run it with the `--generate-config` option to create the default configuration file in the same directory without launching the rest of the program.
-##### Method 1
+##### Method 1 (recommended)
 ```
 git clone https://github.com/dave-woods/yt-search-play.git
 cd yt-search-play
 chmod +x yt-search-play
+cd ppt
+npm i
 ```
-##### Method 2
-```
-wget https://raw.githubusercontent.com/dave-woods/yt-search-play/main/yt-search-play
-chmod +x yt-search-play
-./yt-search-play --generate-config
-```
-
 Once you have the file downloaded and executable, you might want to add the script's directory to your PATH variable to make it executable from anywhere without having to specify the full path to it. The simplest way is to symlink to your user `bin` directory.
 
 ```
@@ -51,6 +47,8 @@ You can press **Alt+1** to add N more videos to the results screen, where N is t
 If cached results are displayed, pressing **Alt+0** will empty the cache and reload fresh results.
 
 To display just a particular channel's videos, you can use the "@" symbol before the channel's name to find their most recent uploads. For example, typing `@drawfee` will bring up the most recent videos from [Drawfee Show](https://www.youtube.com/c/drawfee).
+
+If using the experimental `puppets` branch, you can use **Shift + Enter** to select multiple videos, and then pressing **Alt+3** will send a signal to YouTube to add those videos to the account's Watch Later playlist, or to remove them if they are already present in that playlist. In order for this to work you *must* place a file named `cookies.json` inside the `ppt` directory, which is generated in the same way as the `cookies.txt` file below, but using the JSON format instead of the Netscape format.
 
 #### Accessing subscription feed or Watch Later playlist
 
@@ -91,7 +89,6 @@ In future:
 * Pass a theme file for rofi
 * Queue multiple videos
 * Get videos from Liked videos playlist
-* *Experimentally* add/remove a video from Liked videos or Watch Later playlists
 * Deprecate `--use-max-downloads` in favour of `--get-all`
 
 ## Configuration
