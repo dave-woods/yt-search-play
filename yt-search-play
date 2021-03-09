@@ -334,7 +334,7 @@ find_video () {
 	fi
 	rofi_exit_code=$?
 
-	if ([[ $rofi_exit_code -eq $ROFI_OK ]] || [[ $rofi_exit_code -eq $ROFI_SEND_WL ]]) && [[ -n "$idx" ]] && [[ "$idx" =~ ^([0-9]$'\n')*[0-9]$ ]]
+	if ([[ $rofi_exit_code -eq $ROFI_OK ]] || [[ $rofi_exit_code -eq $ROFI_SEND_WL ]]) && [[ -n "$idx" ]] && [[ "$idx" =~ ^([0-9]+$'\n')*[0-9]+$ ]]
 	then
 		i=0
 		for ii in $idx
