@@ -24,7 +24,7 @@ const clickWatchLater = async (page) => {
   if (process.argv.length === 4) {
     const ytUrl = process.argv[2]
     const fn = process.argv[3]
-    const browser = await puppeteer.launch({slowMo: 50})
+    const browser = await puppeteer.launch({slowMo: 100})
     const page = await browser.newPage()
     const cookiesString = await readFile(path.resolve(__dirname, 'cookies.json'))
     const cookies = JSON.parse(cookiesString)
