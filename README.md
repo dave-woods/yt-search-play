@@ -7,6 +7,8 @@ When the script is run, a rofi window will appear. The user can type to search, 
 The program can also fetch videos from a specified YouTube account's subscription feed or Watch Later playlist instead.
 
 By default, searches are cached for 1 minute, but this can be disabled by using the `--force-no-cache` flag. The cache time can also be extended if desired, and you can set new defaults with a config file. If using the `--thumbnails` option, thumbnail files will only be stored until the cache expires.
+
+Note that there is an `experimental` branch which may contain new features.
 ## Dependencies
 
 Listed versions below have been tested. Newer releases should work fine, but older versions may have problems. Note that the versions located in the standard package managers may be outdated - see the relevant links above for the most up to date information on installing.
@@ -44,7 +46,7 @@ ln -s ./yt-search-play ~/.local/bin/yt-search-play
 
 Once launched, a rofi window will appear. You can type in your search query at the prompt, and hit the **Enter** key to begin searching YouTube for matching videos. If you have used the program before, your recent searches will be displayed, and you can use the **Up** and **Down** arrow keys to navigate, or the **Left** and **Right** arrow keys to move back and forth between pages.
 
-Hit the **Enter key** to select the highlighted history entry. When you have history entries available, typing will filter the entries - if what you type doesn't match any entries, a search will be performed instead. If your query matches a history entry, but you want to perform a search instead of selecting the entry, hit **Ctrl + Enter** to override selecting the history entry. If the program is launched in Subscriptions or Watch Later mode, searching is disabled, and typing at the prompt will just filter videos.
+Hit the **Enter** to select the highlighted history entry. When you have history entries available, typing will filter the entries - if what you type doesn't match any entries, a search will be performed instead. If your query matches a history entry, but you want to perform a search instead of selecting the entry, hit **Ctrl+Enter** to override selecting the history entry. If the program is launched in Subscriptions or Watch Later mode, searching is disabled, and typing at the prompt will just filter videos.
 
 You can press **Alt+1** to add N more videos to the results screen, where N is the search size. Note that due to the way YouTube allows videos to be found, playlists which contain over 100 videos (including the Subscriptions feed) may be problematic, either being slow, or returning no results. This is an upstream issue which youtube-dl may or may not be able to solve in the future.
 
@@ -91,7 +93,7 @@ In future:
 * Pass a theme file for rofi
 * Queue multiple videos
 * Get videos from Liked videos playlist
-* *Experimentally* add/remove a video from Liked videos or Watch Later playlists
+* Add/remove a video from Liked videos or Watch Later playlists [see `experimental` branch]
 * Deprecate `--use-max-downloads` in favour of `--get-all`
 
 ## Configuration
