@@ -468,6 +468,13 @@ process_args () {
   fi
 }
 
+get_channel_url () {
+  youtube-dl -s --flat-playlist "https://www.youtube.com/c/$1" &>/dev/null && [[ $? -eq 0 ]] && echo "https://www.youtube.com/c/$1/videos" &
+  youtube-dl -s --flat-playlist "https://www.youtube.com/channel/$1" &>/dev/null && [[ $? -eq 0 ]] && echo "https://www.youtube.com/channel/$1/videos" &
+  youtube-dl -s --flat-playlist "https://www.youtube.com/user/$1" &>/dev/null && [[ $? -eq 0 ]] && echo "https://www.youtube.com/user/$1/videos" &
+	wait
+}
+
 do_search () {
   playlist_end=$search_size
   if [[ "$subs_mode" == "true" ]]
@@ -492,10 +499,7 @@ do_search () {
     elif [[ "$search_query" =~ ^@(.+)$ ]]
     then
       sanitised_query=${BASH_REMATCH[1]// /+}
-      youtube-dl -s --flat-playlist "https://www.youtube.com/c/$sanitised_query" &>/dev/null && [[ $? -eq 0 ]] && [[ $FINDING -ne 1 ]] && find_video "https://www.youtube.com/c/$sanitised_query/videos" &
-      youtube-dl -s --flat-playlist "https://www.youtube.com/channel/$sanitised_query" &>/dev/null && [[ $? -eq 0 ]] && [[ $FINDING -ne 1 ]] && find_video "https://www.youtube.com/channel/$sanitised_query/videos" &
-      youtube-dl -s --flat-playlist "https://www.youtube.com/user/$sanitised_query" &>/dev/null && [[ $? -eq 0 ]] && [[ $FINDING -ne 1 ]] && find_video "https://www.youtube.com/user/$sanitised_query/videos" &
-      wait
+			find_video "$(get_channel_url "$sanitised_query")"
     elif [[ -n "$search_query" ]]
     then
       sanitised_query=${search_query// /+}
