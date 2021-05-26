@@ -8,10 +8,11 @@ The program can also fetch videos from a specified YouTube account's subscriptio
 
 By default, searches are cached for 1 minute, but this can be disabled by using the `--force-no-cache` flag. The cache time can also be extended if desired, and you can set new defaults with a config file. If using the `--thumbnails` option, thumbnail files will only be stored until the cache expires.
 
-Note that there is an `experimental` branch which may contain new features.
 ## Dependencies
 
 Listed versions below have been tested. Newer releases should work fine, but older versions may have problems. Note that the versions located in the standard package managers may be outdated - see the relevant links above for the most up to date information on installing.
+
+Note that the dependencies for `npm` and `node` are optional to enable extra functionality.
 
 * rofi 1.6.1
 * youtube-dl 2021.01.16
@@ -24,12 +25,12 @@ Listed versions below have been tested. Newer releases should work fine, but old
 
 Make sure to give the script execution permission once it's downloaded. If you download just the script alone, you can run it with the `--generate-config` option to create the default configuration file in the same directory without launching the rest of the program.
 ##### Method 1 (recommended)
+Note that the last line is optional to enable extra functionality.
 ```
 git clone https://github.com/dave-woods/yt-search-play.git
 cd yt-search-play
 chmod +x yt-search-play
-cd ppt
-npm i
+cd ppt && npm i
 ```
 Once you have the file downloaded and executable, you might want to add the script's directory to your PATH variable to make it executable from anywhere without having to specify the full path to it. The simplest way is to symlink to your user `bin` directory.
 
