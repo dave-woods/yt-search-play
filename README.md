@@ -18,23 +18,19 @@ Listed versions below have been tested. Newer releases should work fine, but old
 * mpv 0.14.0
 * jq 1.5.1 (used to parse the data from youtube-dl)
 * gawk 4.1.3 (GNU awk, for pretty printing)
+* npm 7.5.3, node 15.10.0 (used to toggle a video's inclusion in the Watch Later playlist)
 
 ## Installation and usage
 
 Make sure to give the script execution permission once it's downloaded. If you download just the script alone, you can run it with the `--generate-config` option to create the default configuration file in the same directory without launching the rest of the program.
-##### Method 1
+##### Method 1 (recommended)
 ```
 git clone https://github.com/dave-woods/yt-search-play.git
 cd yt-search-play
 chmod +x yt-search-play
+cd ppt
+npm i
 ```
-##### Method 2
-```
-wget https://raw.githubusercontent.com/dave-woods/yt-search-play/main/yt-search-play
-chmod +x yt-search-play
-./yt-search-play --generate-config
-```
-
 Once you have the file downloaded and executable, you might want to add the script's directory to your PATH variable to make it executable from anywhere without having to specify the full path to it. The simplest way is to symlink to your user `bin` directory.
 
 ```
@@ -46,13 +42,17 @@ ln -s ./yt-search-play ~/.local/bin/yt-search-play
 
 Once launched, a rofi window will appear. You can type in your search query at the prompt, and hit the **Enter** key to begin searching YouTube for matching videos. If you have used the program before, your recent searches will be displayed, and you can use the **Up** and **Down** arrow keys to navigate, or the **Left** and **Right** arrow keys to move back and forth between pages.
 
-Hit the **Enter** to select the highlighted history entry. When you have history entries available, typing will filter the entries - if what you type doesn't match any entries, a search will be performed instead. If your query matches a history entry, but you want to perform a search instead of selecting the entry, hit **Ctrl+Enter** to override selecting the history entry. If the program is launched in Subscriptions or Watch Later mode, searching is disabled, and typing at the prompt will just filter videos.
+Hit the **Enter** key to select the highlighted history entry. When you have history entries available, typing will filter the entries - if what you type doesn't match any entries, a search will be performed instead. If your query matches a history entry, but you want to perform a search instead of selecting the entry, hit **Ctrl+Enter** to override selecting the history entry. If the program is launched in Subscriptions or Watch Later mode, searching is disabled, and typing at the prompt will just filter videos.
 
-You can press **Alt+1** to add N more videos to the results screen, where N is the search size. Note that due to the way YouTube allows videos to be found, playlists which contain over 100 videos (including the Subscriptions feed) may be problematic, either being slow, or returning no results. This is an upstream issue which youtube-dl may or may not be able to solve in the future.
+You can press **Alt+m** to add N more videos to the results screen, where N is the search size. Note that due to the way YouTube allows videos to be found, playlists which contain over 100 videos (including the Subscriptions feed) may be problematic, either being slow, or returning no results. This is an upstream issue which youtube-dl may or may not be able to solve in the future.
 
-If cached results are displayed, pressing **Alt+0** will empty the cache and reload fresh results.
+If cached results are displayed, pressing **Alt+r** will empty the cache and reload fresh results.
 
 To display just a particular channel's videos, you can use the "@" symbol before the channel's name to find their most recent uploads. For example, typing `@drawfee` will bring up the most recent videos from [Drawfee Show](https://www.youtube.com/c/drawfee).
+
+If using the `experimental` branch, you can use **Shift+Enter** to select multiple videos, and then pressing **Alt+w** will send a signal to YouTube to add those videos to the account's Watch Later playlist, or to remove them if they are already present in that playlist. Pressing **Alt+l** will do the same for the account's Liked Videos playlist. In order for this to work you *must* place a file named `cookies.json` inside the `ppt` directory, which is generated in the same way as the `cookies.txt` file below, but using the JSON format instead of the Netscape format.
+
+Pressing **Alt+1** switches to normal (search) mode, **Alt+2** switches to subs mode, and **Alt+3** switches to watch later mode.
 
 #### Accessing subscription feed or Watch Later playlist
 
@@ -65,6 +65,8 @@ Once the cookie file is valid, launching the program with the `--subs` option wi
 The following options are available:
 * `--generate-config`: Generate a default configuration file and exit
 * `--dump-config`: Print the loaded config file's location and the loaded configuration to the terminal and exit
+* `--config [file]`: Use `file` as the configuration file
+* `--no-config`: Use the default configuration
 * `--clear-history`: Clear the search history and exit
 * `--clear-cache`: Clear the cache and exit
 * `-s` *or* `--subs`: Fetch videos from a YouTube account's subscription feed instead of using a search query
@@ -78,7 +80,6 @@ The following options are available:
 * `-C` *or* `--force-no-cache`: Prevent the program from reading from or writing to the cache
 * `-H` *or* `--force-no-history`: Disable the search history
 * `--max-cache-age [num]`: Set the maximum number of seconds before cache entries expire
-* `--config [file]`: Use `file` as the configuration file
 * `-h` *or* `--help`: Print help and exit
 
 ## Known issues and upcoming features
@@ -93,8 +94,9 @@ In future:
 * Pass a theme file for rofi
 * Queue multiple videos
 * Get videos from Liked videos playlist
-* Add/remove a video from Liked videos or Watch Later playlists [see `experimental` branch]
-* Deprecate `--use-max-downloads` in favour of `--get-all`
+* Deprecate `--use-max-downloads` in favour of `--get-all` or similar
+* More config options, including setting the hotkeys and altering the timeout used by puppeteer
+* Verbose option for debugging
 
 ## Configuration
 

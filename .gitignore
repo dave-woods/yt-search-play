@@ -2,7 +2,6 @@ check.sh
 .data
 *.swp
 config.json
-
 node_modules
 cookies.json
 package-lock.json

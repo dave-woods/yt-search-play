@@ -22,7 +22,24 @@ do
   fi
 done
 
-if [[ "$check_failed" ]]
+if [[ "$USE_NPM" == "true" ]]
+then
+  type npm &>/dev/null
+  if [[ $? -ne 0 ]]
+  then
+    check_failed=true
+    >&2 echo "The dependency npm is missing. Run \"sudo apt install npm\" to install it, or see https://nodejs.org/en/download/package-manager for further details."
+  fi
+
+  type node &>/dev/null
+  if [[ $? -ne 0 ]]
+  then
+    check_failed=true
+    >&2 echo "The dependency node is missing. Run \"sudo apt install node\" to install it, or see https://nodejs.org/en/download/package-manager for further details."
+  fi
+fi
+
+if [[ "$check_failed" == "true" ]]
 then
   exit 1
 fi
@@ -53,7 +70,12 @@ thumbnail_size=2
 
 ROFI_OK=0
 ROFI_MORE=10
+ROFI_SEND_LL=11
+ROFI_SEND_WL=12
 ROFI_REFRESH=19
+ROFI_MODE_NORMAL=20
+ROFI_MODE_SUBS=21
+ROFI_MODE_WL=22
 
 ## Cleanup on exit
 # trap cleanup EXIT
@@ -71,6 +93,8 @@ print_help () {
 echo -en "The following options are available:
 --generate-config: Generate a default configuration file and exit
 --dump-config: Print the loaded config file's location and the loaded configuration and exit
+--config [file]: Use file as the configuration file
+--no-config: Use default configurations
 --clear-history: Clear the search history and exit
 --clear-cache: Clear the cache and exit
 -s|--subs: Fetch videos from a YouTube account's subscription feed instead of using a search query
@@ -84,8 +108,15 @@ echo -en "The following options are available:
 --use-max-downloads: This uses youtube-dl's --max-downloads flag instead of --playlist-end internally
 -C|--force-no-cache: Prevent the program from reading from or writing to the cache
 -H|--force-no-history: Disable the search history
---config [file]: Use file as the configuration file
--h|--help: Print help and exit"
+-h|--help: Print help and exit
+
+Pressing Alt+1 switches to normal (search) mode
+Pressing Alt+2 switches to subscriptions mode
+Pressing Alt+3 switches to watch later mode
+
+In normal mode, pressing Enter will select the currently highlighted history entry, or search if there are no highlighted entries. Pressing Ctrl+Enter will always search.
+Video results may be toggled for inclusion in the watch later or liked videos playlists by pressing Alt+w or Alt+l, respectively. You can use Shift+Enter to select multiple videos before toggling.
+Pressing Alt+m will load more video results, if available."
 }
 
 find_config () {
@@ -242,16 +273,13 @@ read_from_cache () {
 }
 
 find_video () {
-  if [[ $FINDING -eq 1 ]]
-  then
-    return 1
-  fi
-
-  FINDING=1
   local search_url="$1"
+  local found_results=
   cache_value=
   partial_cache=
+  history_entry=
   selection=
+  idx=
   url=
 
   if [[ "$subs_mode" == "true" ]] || [[ "$wl_mode" == "true" ]]
@@ -262,7 +290,6 @@ find_video () {
       local include_cookies="--cookies $cookiefile"
     else
       >&2 echo "A valid cookies.txt file must exist in $data_dir."
-      FINDING=0
       exit 1
     fi
   fi
@@ -308,35 +335,90 @@ find_video () {
 
   if [[ "$use_thumbnails" == "true" ]]
   then
-    idx=$(echo -e "$(echo "$found_results" | jq -r --arg td "$thumb_dir" '. | "\(.title) :: \(.uploader)\\0icon\\x1f\($td)/\(.id).jpg"' | head -n $playlist_end)" | rofi -dmenu -i -p 'Select Video' -show-icons -l 10 -scroll-method 0 -format i -async-pre-read 0 -selected-row $((playlist_end-search_size)) -theme-str "element-icon { size: ${thumbnail_size}em; }"; exit $?)
+    iconstr="\"\(.title) :: \(.uploader)\\\0icon\\\x1f${thumb_dir}/\(.id).jpg\""
+    useicons="-show-icons"
+    themestr="element-icon{size:${thumbnail_size}em;}"
   else
-    idx=$(echo "$found_results" | jq -r '. | "\(.title) :: \(.uploader)"' | head -n $playlist_end | rofi -dmenu -i -p 'Select Video' -no-show-icons -l 10 -scroll-method 0 -format i -async-pre-read 0 -selected-row $((playlist_end-search_size)); exit $?)
+    iconstr="\"\(.title) :: \(.uploader)\""
+    useicons="-no-show-icons"
   fi
+
+  idx=$(echo -e "$(echo "$found_results" | jq -r "$iconstr" | head -n $playlist_end)" | rofi -dmenu -i -p 'Select Video' -l 10 -scroll-method 0 -format i -async-pre-read 0 -selected-row $((playlist_end-search_size)) -multi-select $useicons -theme-str "$themestr" -kb-custom-1 Alt+m -kb-custom-2 Alt+l -kb-custom-3 Alt+w -kb-custom-10 Alt+r -kb-custom-11 Alt+1 -kb-custom-12 Alt+2 -kb-custom-13 Alt+3; exit $?)
   rofi_exit_code=$?
 
-  if [[ $rofi_exit_code -eq $ROFI_OK ]] && [[ -n "$idx" ]] && [[ $idx -ge 0 ]]
+  if [[ $rofi_exit_code -eq $ROFI_OK ]] && [[ -n "$idx" ]] && idx=$(echo "$idx" | tail -1) && [[ $idx -ge 0 ]]
   then
-    selection=$(echo "$found_results" | jq --slurp -r --arg idx $idx '.[$idx|tonumber]')
+    selection=$(echo "$found_results" | jq --slurp -r --arg idx "$idx" '.[$idx|tonumber]')
+    url=$(echo "$selection" | jq -r '.url')
+    history_entry="$(echo "$selection" | jq -r '"\(.title) :: \(.uploader) :: \(.url)"')"
   elif [[ $rofi_exit_code -eq $ROFI_MORE ]]
   then
     playlist_end=$((playlist_end+search_size))
-    FINDING=0
     find_video "$1"
-  elif [[ $rofi_exit_code -eq $ROFI_REFRESH ]]
-  then
-    playlist_start=1
-    playlist_end=$search_size
-    refresh_cache=true
-    FINDING=0
-    find_video "$1"
-  fi
+  else
+    if [[ "$USE_NPM" == "true" ]] && [[ $rofi_exit_code -eq $ROFI_SEND_WL ]] && [[ "$idx" =~ ^([0-9]+$'\n')*[0-9]+$ ]]
+    then
+      send_to_node "$found_results" "$idx" wl
+      rofi_exit_code=$ROFI_REFRESH
+    elif [[ "$USE_NPM" == "true" ]] && [[ $rofi_exit_code -eq $ROFI_SEND_LL ]] && [[ "$idx" =~ ^([0-9]+$'\n')*[0-9]+$ ]]
+    then
+      send_to_node "$found_results" "$idx" like
+      rofi_exit_code=$ROFI_REFRESH
+    elif [[ $rofi_exit_code -eq $ROFI_MODE_NORMAL ]]
+    then
+      subs_mode=false
+      wl_mode=false
+      do_search
+    elif [[ $rofi_exit_code -eq $ROFI_MODE_SUBS ]]
+    then
+      subs_mode=true
+      wl_mode=false
+      do_search
+    elif [[ $rofi_exit_code -eq $ROFI_MODE_WL ]]
+    then
+      subs_mode=false
+      wl_mode=true
+      do_search
+    fi
 
-  url=$(echo "$selection" | jq -r '.url')
-  history_entry="$(echo "$selection" | jq -r '"\(.title) :: \(.uploader) :: \(.url)"')"
-  FINDING=0
+    if [[ $rofi_exit_code -eq $ROFI_REFRESH ]]
+    then
+      playlist_start=1
+      playlist_end=$search_size
+      refresh_cache=true
+      find_video "$1"
+    fi
+  fi
 }
 
-get_thumbnails () { 
+send_to_node () {
+  local urls=
+  local node_pids=
+  local i=0
+  for ii in $2
+  do
+    selections=$(echo "$1" | jq --slurp -r --arg idx "$ii" '.[$idx|tonumber]')
+    local urls[$((i++))]=$(echo "$selections" | jq -r '.url')
+  done
+
+  rofi -e "Updating playlist, this may take a moment..." &
+  mesgpid=$!
+  local i=0
+  for uuu in ${urls[*]}
+  do
+    echo "$uuu" > /dev/tty
+    node "$script_dir/ppt/index.js" "$uuu" $3 &>/dev/null &
+    local node_pids[$((i++))]=$!
+  done
+  for node_pid in ${node_pids[*]}
+  do
+    wait $node_pid
+  done
+  { kill $mesgpid && wait $mesgpid; } &>/dev/null
+}
+
+get_thumbnails () {
+  local thumb_pids=
   rofi -e "Fetching thumbnails..." &
   mesgpid=$!
   mkdir -p "$data_dir/thumbs"
@@ -346,7 +428,7 @@ get_thumbnails () {
     if [[ ! -f "$thumb_dir/$id.jpg" ]]
     then
       wget -q --output-document="$thumb_dir/$id.jpg" "https://i.ytimg.com/vi/$id/hqdefault.jpg" &
-      thumb_pids[$((thumb_idx++))]=$!
+      local thumb_pids[$((thumb_idx++))]=$!
     fi
   done
   for thumb_pid in ${thumb_pids[*]}
@@ -454,6 +536,11 @@ process_args () {
             shift
             shift
             ;;
+          --no-config)
+            passed_configfile="$default_configfile"
+            load_config
+            shift
+            ;;
           -h|--help)
             echo "$(print_help)"
             exit
@@ -472,7 +559,7 @@ get_channel_url () {
   youtube-dl -s --flat-playlist "https://www.youtube.com/c/$1" &>/dev/null && [[ $? -eq 0 ]] && echo "https://www.youtube.com/c/$1/videos" &
   youtube-dl -s --flat-playlist "https://www.youtube.com/channel/$1" &>/dev/null && [[ $? -eq 0 ]] && echo "https://www.youtube.com/channel/$1/videos" &
   youtube-dl -s --flat-playlist "https://www.youtube.com/user/$1" &>/dev/null && [[ $? -eq 0 ]] && echo "https://www.youtube.com/user/$1/videos" &
-	wait
+  wait
 }
 
 do_search () {
@@ -491,21 +578,44 @@ do_search () {
     else
       history_size=0
     fi
-    search_query=$(echo "$history_entries" | rofi -dmenu -i -p "Search YouTube" -no-show-icons -theme-str 'entry { placeholder: "Enter text or select recent search..."; }' -l $([[ $history_size -lt 10 ]] && echo "$history_size" || echo 10) -scroll-method 0)
-    if [[ "$search_query" =~ (https?\:\/\/)?(www\.)?(youtube\.com|youtu\.?be)\/.+$ ]]
+    search_query=$(echo "$history_entries" | rofi -dmenu -i -p "Search YouTube" -no-show-icons -theme-str 'entry { placeholder: "Enter text or select recent search..."; }' -l $([[ $history_size -lt 10 ]] && echo "$history_size" || echo 10) -scroll-method 0 -kb-custom-1 '' -kb-custom-2 '' -kb-custom-3 '' -kb-custom-11 Alt+1 -kb-custom-12 Alt+2 -kb-custom-13 Alt+3; exit $?)
+    sq_exit_code=$?
+
+    if [[ $sq_exit_code -eq $ROFI_OK ]]
     then
-      selection="$search_query"
-      url="${BASH_REMATCH[0]}"
-    elif [[ "$search_query" =~ ^@(.+)$ ]]
+      if [[ "$search_query" =~ (https?\:\/\/)?(www\.)?(youtube\.com|youtu\.?be)\/.+$ ]]
+      then
+        selection="$search_query"
+        url="${BASH_REMATCH[0]}"
+        history_entry="$search_query"
+      elif [[ "$search_query" =~ ^@(.+)$ ]]
+      then
+        sanitised_query=${BASH_REMATCH[1]// /+}
+        find_video "$(get_channel_url "$sanitised_query")"
+      elif [[ -n "$search_query" ]]
+      then
+        sanitised_query=${search_query// /+}
+        find_video "ytsearchall:$sanitised_query"
+      else
+        exit
+      fi
+    elif [[ $sq_exit_code -eq $ROFI_MODE_NORMAL ]]
     then
-      sanitised_query=${BASH_REMATCH[1]// /+}
-			find_video "$(get_channel_url "$sanitised_query")"
-    elif [[ -n "$search_query" ]]
+      subs_mode=false
+      wl_mode=false
+      do_search
+    elif [[ $sq_exit_code -eq $ROFI_MODE_SUBS ]]
     then
-      sanitised_query=${search_query// /+}
-      find_video "ytsearchall:$sanitised_query"
+      subs_mode=true
+      wl_mode=false
+      do_search
+    elif [[ $sq_exit_code -eq $ROFI_MODE_WL ]]
+    then
+      subs_mode=false
+      wl_mode=true
+      do_search
     else
-      exit
+      exit $sq_exit_code
     fi
   fi
 }
