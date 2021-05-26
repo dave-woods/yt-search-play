@@ -11,7 +11,6 @@ default_configfile="$script_dir/.default.config.json"
 check_failed=
 
 declare -A deps=( \
-  ["gawk"]="The dependency gawk is missing. Run \"sudo apt install gawk\" to install it." \
   ["rofi"]="The dependency rofi is missing. See https://github.com/davatorium/rofi/blob/next/INSTALL.md for instructions on how to install it." \
   ["jq"]="The dependency jq is missing. Run \"sudo apt install jq\" to install it, or see https://stedolan.github.io/jq/download for further details." \
   ["youtube-dl"]="The dependency youtube-dl is missing. See https://github.com/ytdl-org/youtube-dl/blob/master/README.md#installation for instructions on how to install it." \

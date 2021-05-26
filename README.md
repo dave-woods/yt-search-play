@@ -18,7 +18,6 @@ Note that the dependencies `npm` and `node` are optional to enable extra functio
 * youtube-dl 2021.01.16
 * mpv 0.14.0
 * jq 1.5.1 (used to parse the data from youtube-dl)
-* gawk 4.1.3 (GNU awk, for pretty printing)
 * npm 7.5.3, node 15.10.0 (used to toggle a video's inclusion in the Watch Later playlist)
 
 ## Installation and usage
