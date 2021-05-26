@@ -40,23 +40,23 @@ ppt_check_failed=
 type node &>/dev/null
 if [[ $? -ne 0 ]]
 then
-	ppt_check_failed="The dependency node is missing. Run \"sudo apt install node\" to install it, or see https://nodejs.org/en/download/package-manager for further details.\n"
+  ppt_check_failed="The dependency node is missing. Run \"sudo apt install node\" to install it, or see https://nodejs.org/en/download/package-manager for further details.\n"
 fi
 
 type npm &>/dev/null
 if [[ $? -ne 0 ]]
 then
-	ppt_check_failed="${ppt_check_failed}The dependency npm is missing. Run \"sudo apt install npm\" to install it, or see https://nodejs.org/en/download/package-manager for further details.\n"
+  ppt_check_failed="${ppt_check_failed}The dependency npm is missing. Run \"sudo apt install npm\" to install it, or see https://nodejs.org/en/download/package-manager for further details.\n"
 fi
 
 if [[ -z "$ppt_check_failed" ]]
 then
-	if [[ "$(cd "$script_dir/ppt" > /dev/null 2>&1 && npm list --depth 1 puppeteer >/dev/null 2>&1; echo $?)" != "0" ]]
-	then
-		ppt_check_failed="Can't find the puppeteer module. Have you run \"npm install\" inside the ppt directory?"
-	else
-		USE_PPT=true
-	fi
+  if [[ "$(cd "$script_dir/ppt" > /dev/null 2>&1 && npm list --depth 1 puppeteer >/dev/null 2>&1; echo $?)" != "0" ]]
+  then
+    ppt_check_failed="Can't find the puppeteer module. Have you run \"npm install\" inside the ppt directory?"
+  else
+    USE_PPT=true
+  fi
 fi
 
 ## Variable defaults
@@ -402,11 +402,11 @@ find_video () {
 }
 
 send_to_node () {
-	if [[ "$USE_PPT" != "true" ]]
-	then
-		>&2 echo -en "You seem to be trying to use features you have not enabled:\n$ppt_check_failed"
-		return 1
-	fi
+  if [[ "$USE_PPT" != "true" ]]
+  then
+    >&2 echo -en "You seem to be trying to use features you have not enabled:\n$ppt_check_failed"
+    return 1
+  fi
 
   local urls=
   local node_pids=
