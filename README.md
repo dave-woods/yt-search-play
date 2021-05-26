@@ -4,7 +4,7 @@ A utility which uses [rofi](https://github.com/davatorium/rofi), [youtube-dl](ht
 
 When the script is run, a rofi window will appear. The user can type to search, or can filter and select from recent searches. If a YouTube URL is part of the search, that video will be opened in MPV, otherwise a new rofi window will be displayed showing a list of videos that match the search terms. The user can then filter and select one of these videos, which will be opened in MPV.
 
-The program can also fetch videos from a specified YouTube account's subscription feed or Watch Later playlist instead.
+The program can also fetch videos from a specified YouTube account's subscription feed or Watch Later playlist instead. Installing some extra dependencies (see below) will allow you to use the experimental features which allow you to tell YouTube to add/remove a video from your Watch Later or Liked Videos list.
 
 By default, searches are cached for 1 minute, but this can be disabled by using the `--force-no-cache` flag. The cache time can also be extended if desired, and you can set new defaults with a config file. If using the `--thumbnails` option, thumbnail files will only be stored until the cache expires.
 
@@ -12,7 +12,7 @@ By default, searches are cached for 1 minute, but this can be disabled by using 
 
 Listed versions below have been tested. Newer releases should work fine, but older versions may have problems. Note that the versions located in the standard package managers may be outdated - see the relevant links above for the most up to date information on installing.
 
-Note that the dependencies for `npm` and `node` are optional to enable extra functionality.
+Note that the dependencies `npm` and `node` are optional to enable extra functionality.
 
 * rofi 1.6.1
 * youtube-dl 2021.01.16
@@ -23,16 +23,15 @@ Note that the dependencies for `npm` and `node` are optional to enable extra fun
 
 ## Installation and usage
 
-Make sure to give the script execution permission once it's downloaded. If you download just the script alone, you can run it with the `--generate-config` option to create the default configuration file in the same directory without launching the rest of the program.
+Make sure to give the script execution permission once it's downloaded. If you download just the script alone, you can run it with the `--generate-config` option to create the default configuration file in the same directory without launching the rest of the program. Note that the last line is optional to enable extra functionality.
 ##### Method 1 (recommended)
-Note that the last line is optional to enable extra functionality.
 ```
 git clone https://github.com/dave-woods/yt-search-play.git
 cd yt-search-play
 chmod +x yt-search-play
-cd ppt && npm i
+cd ppt && npm i # optional
 ```
-Once you have the file downloaded and executable, you might want to add the script's directory to your PATH variable to make it executable from anywhere without having to specify the full path to it. The simplest way is to symlink to your user `bin` directory.
+Once you have downloaded the program and made it executable, you might want to add the script's directory to your PATH variable to make it executable from anywhere without having to specify the full path to it. The simplest way is to symlink to your user `bin` directory.
 
 ```
 ln -s ./yt-search-play ~/bin/yt-search-play
@@ -51,7 +50,7 @@ If cached results are displayed, pressing **Alt+r** will empty the cache and rel
 
 To display just a particular channel's videos, you can use the "@" symbol before the channel's name to find their most recent uploads. For example, typing `@drawfee` will bring up the most recent videos from [Drawfee Show](https://www.youtube.com/c/drawfee).
 
-If using the `experimental` branch, you can use **Shift+Enter** to select multiple videos, and then pressing **Alt+w** will send a signal to YouTube to add those videos to the account's Watch Later playlist, or to remove them if they are already present in that playlist. Pressing **Alt+l** will do the same for the account's Liked Videos playlist. In order for this to work you *must* place a file named `cookies.json` inside the `ppt` directory, which is generated in the same way as the `cookies.txt` file below, but using the JSON format instead of the Netscape format.
+If using the experimental npm features, you can use **Shift+Enter** to select one or multiple videos, and then pressing **Alt+w** will send a signal to YouTube to add those videos to the account's Watch Later playlist, or to remove them if they are already present in that playlist. Pressing **Alt+l** will do the same for the account's Liked Videos playlist. In order for this to work you *must* place a file named `cookies.json` inside the `ppt` directory, which is generated in the same way as the `cookies.txt` file below, but using the JSON format instead of the Netscape format. Note that these features are *unstable*, and are liable to break if YouTube change the way their pages render!
 
 Pressing **Alt+1** switches to normal (search) mode, **Alt+2** switches to subs mode, and **Alt+3** switches to watch later mode.
 

@@ -5,14 +5,14 @@ const path = require('path');
 const readFile = util.promisify(fs.readFile);
 
 const clickLike = async (page) => {
-  await page.waitForSelector('ytd-toggle-button-renderer')
-  await page.click('ytd-toggle-button-renderer')
+  await page.waitForSelector('#top-level-buttons-computed > ytd-toggle-button-renderer:nth-child(1)')
+  await page.click('#top-level-buttons-computed > ytd-toggle-button-renderer:nth-child(1)')
   console.log('clicked Like')
 }
 
 const clickWatchLater = async (page) => {
-  await page.waitForSelector('#top-level-buttons ytd-button-renderer')
-  const btn1 = await page.$$('#top-level-buttons ytd-button-renderer')
+  await page.waitForSelector('#top-level-buttons-computed > ytd-button-renderer:nth-child(4)')
+  const btn1 = await page.$$('#top-level-buttons-computed > ytd-button-renderer:nth-child(4)')
   await btn1[1].click()
   await page.waitForSelector('tp-yt-paper-checkbox')
   await page.click('tp-yt-paper-checkbox')

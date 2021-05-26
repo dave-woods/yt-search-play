@@ -1,5 +1,11 @@
 #!/bin/bash
 
+## Where am I?
+
+script_path=$(realpath $0)
+script_dir="$(dirname "$script_path")"
+default_configfile="$script_dir/.default.config.json"
+
 ## Check dependencies
 
 check_failed=
@@ -22,33 +28,36 @@ do
   fi
 done
 
-if [[ "$USE_NPM" == "true" ]]
-then
-  type npm &>/dev/null
-  if [[ $? -ne 0 ]]
-  then
-    check_failed=true
-    >&2 echo "The dependency npm is missing. Run \"sudo apt install npm\" to install it, or see https://nodejs.org/en/download/package-manager for further details."
-  fi
-
-  type node &>/dev/null
-  if [[ $? -ne 0 ]]
-  then
-    check_failed=true
-    >&2 echo "The dependency node is missing. Run \"sudo apt install node\" to install it, or see https://nodejs.org/en/download/package-manager for further details."
-  fi
-fi
-
 if [[ "$check_failed" == "true" ]]
 then
   exit 1
 fi
 
-## Where am I?
+## Check if using node/puppeteer features
 
-script_path=$(realpath $0)
-script_dir="$(dirname "$script_path")"
-default_configfile="$script_dir/.default.config.json"
+USE_PPT=
+ppt_check_failed=
+type node &>/dev/null
+if [[ $? -ne 0 ]]
+then
+	ppt_check_failed="The dependency node is missing. Run \"sudo apt install node\" to install it, or see https://nodejs.org/en/download/package-manager for further details.\n"
+fi
+
+type npm &>/dev/null
+if [[ $? -ne 0 ]]
+then
+	ppt_check_failed="${ppt_check_failed}The dependency npm is missing. Run \"sudo apt install npm\" to install it, or see https://nodejs.org/en/download/package-manager for further details.\n"
+fi
+
+if [[ -z "$ppt_check_failed" ]]
+then
+	if [[ "$(cd "$script_dir/ppt" > /dev/null 2>&1 && npm list --depth 1 puppeteer >/dev/null 2>&1; echo $?)" != "0" ]]
+	then
+		ppt_check_failed="Can't find the puppeteer module. Have you run \"npm install\" inside the ppt directory?"
+	else
+		USE_PPT=true
+	fi
+fi
 
 ## Variable defaults
 
@@ -116,6 +125,7 @@ Pressing Alt+3 switches to watch later mode
 
 In normal mode, pressing Enter will select the currently highlighted history entry, or search if there are no highlighted entries. Pressing Ctrl+Enter will always search.
 Video results may be toggled for inclusion in the watch later or liked videos playlists by pressing Alt+w or Alt+l, respectively. You can use Shift+Enter to select multiple videos before toggling.
+Pressing Alt+r will refresh the search if there is a stale cache.
 Pressing Alt+m will load more video results, if available."
 }
 
@@ -356,11 +366,11 @@ find_video () {
     playlist_end=$((playlist_end+search_size))
     find_video "$1"
   else
-    if [[ "$USE_NPM" == "true" ]] && [[ $rofi_exit_code -eq $ROFI_SEND_WL ]] && [[ "$idx" =~ ^([0-9]+$'\n')*[0-9]+$ ]]
+    if [[ $rofi_exit_code -eq $ROFI_SEND_WL ]] && [[ "$idx" =~ ^([0-9]+$'\n')*[0-9]+$ ]]
     then
       send_to_node "$found_results" "$idx" wl
       rofi_exit_code=$ROFI_REFRESH
-    elif [[ "$USE_NPM" == "true" ]] && [[ $rofi_exit_code -eq $ROFI_SEND_LL ]] && [[ "$idx" =~ ^([0-9]+$'\n')*[0-9]+$ ]]
+    elif [[ $rofi_exit_code -eq $ROFI_SEND_LL ]] && [[ "$idx" =~ ^([0-9]+$'\n')*[0-9]+$ ]]
     then
       send_to_node "$found_results" "$idx" like
       rofi_exit_code=$ROFI_REFRESH
@@ -392,6 +402,12 @@ find_video () {
 }
 
 send_to_node () {
+	if [[ "$USE_PPT" != "true" ]]
+	then
+		>&2 echo -en "You seem to be trying to use features you have not enabled:\n$ppt_check_failed"
+		return 1
+	fi
+
   local urls=
   local node_pids=
   local i=0
@@ -406,7 +422,6 @@ send_to_node () {
   local i=0
   for uuu in ${urls[*]}
   do
-    echo "$uuu" > /dev/tty
     node "$script_dir/ppt/index.js" "$uuu" $3 &>/dev/null &
     local node_pids[$((i++))]=$!
   done
