@@ -2,9 +2,11 @@
 
 A utility which uses [rofi](https://github.com/davatorium/rofi), [youtube-dl](https://github.com/ytdl-org/youtube-dl), and [mpv](https://github.com/mpv-player/mpv) to search for and play YouTube videos. Works best when bound to a keypress combination such as within a window manager like [i3](https://github.com/i3/i3).
 
+This program does **not** require a YouTube developer account or API key, as it does not utilise the YouTube API. There is limited scope for expansion of features as a result, but the core abilities of searching for and playing videos work fine.
+
 When the script is run, a rofi window will appear. The user can type to search, or can filter and select from recent searches. If a YouTube URL is part of the search, that video will be opened in MPV, otherwise a new rofi window will be displayed showing a list of videos that match the search terms. The user can then filter and select one of these videos, which will be opened in MPV.
 
-The program can also fetch videos from a specified YouTube account's subscription feed or Watch Later playlist instead. Installing some extra dependencies (see below) will allow you to use the experimental features which allow you to tell YouTube to add/remove a video from your Watch Later or Liked Videos list.
+The program can also fetch videos from a specified YouTube account's subscription feed or Watch Later playlist instead. Additionally, experimental features which allow you to tell YouTube to add/remove a video from your Watch Later or Liked Videos list can be optionally enabled by using the [puppeteer](https://www.npmjs.com/package/puppeteer) package with [node](https://nodejs.org/) and [npm](https://www.npmjs.com/get-npm).
 
 By default, searches are cached for 1 minute, but this can be disabled by using the `--force-no-cache` flag. The cache time can also be extended if desired, and you can set new defaults with a config file. If using the `--thumbnails` option, thumbnail files will only be stored until the cache expires.
 
