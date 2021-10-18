@@ -435,7 +435,7 @@ get_thumbnails () {
   local thumb_pids=
   rofi -e "Fetching thumbnails..." &
   mesgpid=$!
-  mkdir -p "$data_dir/thumbs"
+  mkdir -p "$thumb_dir"
   local thumb_idx=0
   for id in $(echo "$search" | jq -r '.id')
   do
